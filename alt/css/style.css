@@ -1,0 +1,188 @@
+/* Grundgerüst: Vollbild-Leinwand, UI darüber */
+html,body{margin:0;height:100%;overflow:hidden;background:#0e0b2e;color:#eef2fa;font:16px/1.3 system-ui,-apple-system,sans-serif;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:none}
+#leinwand{position:fixed;inset:0;width:100%;height:100%;display:block}
+#ui{position:fixed;inset:0;pointer-events:none;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+
+/* Touch-Steuerung */
+.touch{position:absolute;inset:0;pointer-events:none;--touch-skala:1;z-index:1}
+.touch[hidden]{display:none}
+.touch-blick{position:absolute;right:0;top:0;width:55%;height:100%;pointer-events:auto}
+.touch-joy{position:absolute;left:calc(32px + env(safe-area-inset-left));bottom:calc(32px + env(safe-area-inset-bottom));width:calc(140px * var(--touch-skala));height:calc(140px * var(--touch-skala));border-radius:50%;background:rgba(255,255,255,.12);border:2px solid rgba(62,240,255,.5);pointer-events:auto;display:flex;align-items:center;justify-content:center}
+.touch-joy-knauf{width:44%;height:44%;border-radius:50%;background:rgba(62,240,255,.55)}
+.touch-knopf{position:absolute;width:calc(72px * var(--touch-skala));height:calc(72px * var(--touch-skala));border-radius:16px;border:2px solid rgba(62,240,255,.6);background:rgba(14,11,46,.45);color:#eef2fa;font-size:calc(30px * var(--touch-skala));pointer-events:auto;-webkit-tap-highlight-color:transparent;touch-action:none}
+.touch-knopf.klein{width:calc(64px * var(--touch-skala));height:calc(64px * var(--touch-skala));font-size:calc(24px * var(--touch-skala))}
+.touch-knopf.an{background:rgba(62,240,255,.45)}
+
+/* Menüs: dunkler Grund, Pixel-Rahmen, Akzent Cyan */
+[hidden]{display:none!important}
+.ebene{z-index:3;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(7,11,36,.72);pointer-events:auto;padding:16px;box-sizing:border-box;overflow:auto}
+.fenster{background:#151236;border:3px solid #3ef0ff;box-shadow:0 0 0 3px #0e0b2e,0 0 24px rgba(62,240,255,.35);padding:20px 24px;max-width:860px;width:100%;max-height:100%;overflow-x:hidden;overflow-y:auto;box-sizing:border-box;-webkit-user-select:text;user-select:text}
+.titel{margin:0 0 12px;font-size:44px;letter-spacing:6px;color:#3ef0ff;text-shadow:0 0 12px rgba(62,240,255,.6);text-align:center}
+h2{margin:0 0 14px;color:#3ef0ff}
+button,.knopf{box-sizing:border-box;font:inherit;font-size:17px;min-height:48px;padding:8px 16px;border:2px solid #4a5a8a;background:#232056;color:#eef2fa;cursor:pointer;display:inline-flex;align-items:center;gap:6px;border-radius:0}
+button:hover,.knopf:hover{border-color:#3ef0ff}
+button.haupt{background:#1f6f80;border-color:#3ef0ff}
+button.gefahr{border-color:#a8405a}
+button.gefahr.sicher{background:#a8405a}
+button:disabled{opacity:.45;cursor:default}
+button.modus.an{background:#1f6f80;border-color:#3ef0ff}
+.reihe{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;align-items:center}
+.spalte{display:flex;flex-direction:column;gap:10px}
+.welten{display:flex;flex-direction:column;gap:10px}
+.welt{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;border:2px solid #2e2a6b;padding:10px;background:#1b1845}
+.welt.gesperrt{opacity:.6}
+.welt-name{font-size:20px;font-weight:bold}
+.welt-info{font-size:13px;color:#aab3d6;margin-top:2px}
+.welt-erinnerung{font-size:13px;color:#ffd95c;margin-top:4px}
+.welt-knoepfe{display:flex;flex-wrap:wrap;gap:6px}
+.welt-knoepfe button{min-height:40px;font-size:15px;padding:6px 10px}
+.leer{color:#aab3d6}
+.version{margin-top:12px;font-size:12px;color:#6c76a0;text-align:right}
+.feld{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.feld.zeile{flex-direction:row;align-items:center}
+.eingabe{font:inherit;font-size:18px;padding:8px 10px;background:#0e0b2e;color:#eef2fa;border:2px solid #4a5a8a;border-radius:0}
+input[type=range]{width:100%}
+.raster{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px}
+.block{flex-direction:column;justify-content:center;min-height:96px;padding:6px;font-size:12px;text-align:center}
+.block img,.leiste-platz img{width:40px;height:40px;image-rendering:pixelated}
+/* HUD */
+.hud{position:absolute;inset:0;pointer-events:none}
+.fadenkreuz{position:absolute;left:50%;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;background:linear-gradient(#fff,#fff) center/2px 100% no-repeat,linear-gradient(#fff,#fff) center/100% 2px no-repeat;mix-blend-mode:difference}
+.modus-anzeige{position:absolute;left:calc(12px + env(safe-area-inset-left));bottom:calc(12px + env(safe-area-inset-bottom));font-size:14px;color:#aab3d6;text-shadow:0 1px 2px #000}
+.touch ~ .hud .modus-anzeige{display:none}
+.fps{position:absolute;right:12px;top:12px;font-size:14px;color:#3ef0ff;text-shadow:0 1px 2px #000}
+.leiste{position:absolute;left:50%;bottom:calc(10px + env(safe-area-inset-bottom));transform:translateX(-50%);display:flex;gap:4px;pointer-events:auto;z-index:2}
+.leiste-platz{position:relative;width:56px;height:56px;min-height:0;padding:6px;background:rgba(14,11,46,.65);border:2px solid #4a5a8a;justify-content:center}
+.leiste-platz.gewaehlt{border-color:#3ef0ff;box-shadow:0 0 10px rgba(62,240,255,.7)}
+.leiste-platz span{position:absolute;right:3px;bottom:1px;font-size:11px;color:#eef2fa}
+.hinweise{position:absolute;left:50%;top:calc(16px + env(safe-area-inset-top));transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;pointer-events:none;width:min(560px,90%)}
+.hinweis{background:#151236;border:2px solid #3ef0ff;padding:10px 14px;text-align:center}
+@media (max-width:700px){.leiste-platz{width:40px;height:40px;padding:3px}.leiste-platz img{width:30px;height:30px}}
+
+/* Entwicklerwerkzeuge */
+.entwickler{position:absolute;z-index:2;left:calc(8px + env(safe-area-inset-left));top:calc(8px + env(safe-area-inset-top));width:min(380px,calc(100% - 16px));max-height:calc(100% - 16px);overflow:auto;background:rgba(14,11,46,.88);border:2px solid #ffd95c;padding:10px;box-sizing:border-box;pointer-events:auto;font-size:14px}
+.ew-kopf{display:flex;justify-content:space-between;align-items:center;color:#ffd95c;font-weight:bold;margin-bottom:6px}
+.ew-kopf button{min-height:36px;padding:4px 10px}
+.ew-info{margin:0 0 8px;font:12px/1.4 ui-monospace,Menlo,monospace;color:#eef2fa;white-space:pre-wrap}
+.ew-gruppe{border-top:1px solid #2e2a6b;padding-top:8px;margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.ew-reihe{display:flex;flex-wrap:wrap;gap:6px}
+.ew-reihe button{min-height:38px;padding:4px 10px;font-size:14px}
+.ew-reihe select{font:inherit;padding:6px;background:#0e0b2e;color:#eef2fa;border:2px solid #4a5a8a;max-width:160px}
+.ew-reihe input[type=number]{width:70px;font:inherit;padding:6px;background:#0e0b2e;color:#eef2fa;border:2px solid #4a5a8a}
+.ew-zeile{display:flex;align-items:center;gap:6px}
+
+/* Gamepad: sichtbarer Fokus in Menüs */
+button:focus-visible,input:focus-visible,label.knopf:focus-visible,button:focus,label.knopf:focus{outline:3px solid #ffd95c;outline-offset:2px}
+input[type=range].regeln{outline:3px solid #3ef0ff}
+
+/* Survival: Kampf-HUD */
+.kampf{position:absolute;left:50%;bottom:calc(76px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(500px,90%);display:flex;flex-direction:column;gap:4px;pointer-events:none}
+.kampf-stufe{position:absolute;left:0;top:-22px;font-weight:bold;color:#ffd95c;text-shadow:0 1px 2px #000}
+.balken{position:relative;height:12px;background:rgba(0,0,0,.55);border:2px solid #0e0b2e}
+.balken i{position:absolute;left:0;top:0;bottom:0;display:block}
+.balken span{position:absolute;inset:0;font-size:10px;line-height:12px;text-align:center;color:#fff;text-shadow:0 1px 1px #000}
+.balken-lp{height:16px}.balken-lp i{background:#e84545}.balken-lp span{line-height:16px;font-size:12px}
+.balken-schild i{background:#4aa3ff}.balken-fahrzeug i{background:#ffad47}.balken-xp{height:6px}.balken-xp i{background:#ffd95c}
+.balken-hitze{height:6px;width:40%;align-self:center}.balken-hitze i{background:#ff9a3c}.balken-hitze.ueberhitzt i{background:#ff3b3b;animation:blink .3s infinite alternate}
+@keyframes blink{from{opacity:1}to{opacity:.3}}
+.treffer-rand{position:fixed;inset:0;box-shadow:inset 0 0 80px 20px rgba(255,40,40,.7);opacity:0;pointer-events:none}
+.treffer-pfeil{position:fixed;left:50%;top:50%;color:#ff4040;font-size:34px;text-shadow:0 0 6px #000;pointer-events:none}
+.leiste-platz .anzahl,.rs-platz .anzahl{position:absolute;left:3px;bottom:1px;font-size:12px;color:#fff;text-shadow:0 1px 2px #000}
+/* Rucksack */
+.rs{display:flex;flex-wrap:wrap;gap:14px}
+.rs-links{flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:10px}
+.rs-ausruestung{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.rs-aplatz{flex-direction:column;justify-content:center;min-height:70px;padding:4px;font-size:11px}
+.rs-aplatz img,.rs-platz img{width:34px;height:34px;max-width:100%;object-fit:contain;image-rendering:pixelated}
+.rs-werte{font-size:14px;color:#aab3d6}
+.rs-detail{min-height:90px;font-size:14px}.rs-detail h3{margin:0 0 4px}
+.besser{color:#5fdc5f}.schlechter{color:#ff6f6f}.sonder{color:#ffd95c}
+.rs-raster{flex:2 1 320px;min-width:0;display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:4px}
+.rs-platz{position:relative;min-height:0;aspect-ratio:1;padding:2px;justify-content:center}
+.rs-platz.leiste{background:#2b2766}.rs-platz.gewaehlt{outline:3px solid #ffd95c}
+.besiegt{text-align:center}.besiegt h1{color:#ffd95c;font-size:44px;margin:4px 0 10px}
+.reiter{margin:0 0 10px}
+
+/* Gemeinsam spielen: Raumcode, Wort- und Zifferknöpfe, Mitspieler, Beitrittsanfrage */
+.raumcode{font-size:44px;font-weight:bold;letter-spacing:4px;color:#ffd95c;text-align:center;margin:6px 0 10px;font-variant-numeric:tabular-nums;text-shadow:0 0 10px rgba(255,217,92,.4)}
+.raum-schritt{font-size:20px;margin:6px 0 10px;text-align:center}
+.raum-status{font-size:18px;text-align:center;margin:12px 0}
+.raum-status.fehler{color:#ff9a9a}
+.raum-status.fehler:empty{display:none}
+.raum-tipp{font-size:14px;color:#aab3d6;text-align:center;margin:0 0 12px}
+.woerter{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.woerter button{min-height:56px;justify-content:center;font-size:18px;font-weight:bold;letter-spacing:1px}
+.ziffern{display:grid;grid-template-columns:repeat(3,minmax(64px,96px));gap:8px;justify-content:center}
+.ziffern button{min-height:64px;justify-content:center;font-size:26px;font-weight:bold}
+.ziffern [data-aktion="zifferWeg"]{font-size:26px;font-weight:normal}
+.figuren button{justify-content:flex-start;text-align:left;min-height:52px}
+.pvp{align-self:flex-start;margin-bottom:6px}
+h3{margin:14px 0 8px;color:#3ef0ff;font-size:18px}
+.mitspieler-zeile{display:flex;align-items:center;gap:10px;border:2px solid #2e2a6b;background:#1b1845;padding:6px 10px}
+.mitspieler-zeile.getrennt{opacity:.55}
+.mitspieler-zeile .farbe{width:22px;height:22px;flex:none;border:2px solid #eef2fa}
+.mitspieler-name{flex:1;font-size:18px;font-weight:bold}
+.spielt-bei{margin:4px 0;font-size:17px;color:#ffd95c}
+.anfrage-ebene{z-index:5}
+.anfrage{max-width:520px}
+.anfrage h2{text-align:center;font-size:24px}
+.anfrage .reihe{justify-content:center}
+.anfrage button{min-width:120px;justify-content:center;font-size:20px}
+
+.ankunft{position:absolute;left:0;right:0;top:28%;text-align:center;font-size:clamp(36px,8vw,84px);font-weight:800;letter-spacing:.06em;color:#eef2fa;text-shadow:0 0 18px rgba(62,240,255,.8),0 3px 0 #0e0b2e;pointer-events:none;z-index:4;opacity:1;transition:opacity .8s}
+.ankunft.weg{opacity:0}
+.gluehen{position:absolute;inset:0;pointer-events:none;z-index:4;opacity:1;transition:opacity .6s}
+.gluehen.weg{opacity:0}
+.cockpit{position:absolute;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translateX(-50%);background:rgba(14,11,46,.7);border:2px solid #3ef0ff;color:#eef2fa;padding:8px 14px;font-weight:700;pointer-events:none;z-index:2;white-space:nowrap}
+.anleitung{text-align:left;max-width:720px;margin:0 auto}.anleitung h3:first-child{margin-top:4px}.anleitung ul{margin:0 0 6px;padding-left:22px;line-height:1.5}.anleitung li{margin:3px 0}
+.sternenkarte{position:absolute;left:calc(16px + env(safe-area-inset-left));top:calc(120px + env(safe-area-inset-top));width:150px;height:150px;background:rgba(14,11,46,.75);border:2px solid #3ef0ff;z-index:2;pointer-events:auto;box-sizing:border-box}
+.karte-titel{position:absolute;left:0;right:0;top:-20px;font-size:12px;font-weight:700;color:#3ef0ff;text-shadow:0 1px 0 #0e0b2e}
+.sternenkarte button{position:absolute;transform:translate(-50%,-50%);background:none;border:0;padding:4px;margin:0;color:#eef2fa;font-size:11px;line-height:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;white-space:nowrap;min-width:0}
+.sternenkarte button i{display:block;width:12px;height:12px;border-radius:50%;background:#6fd18a;box-shadow:0 0 6px rgba(111,209,138,.8)}
+.sternenkarte button.ziel i{background:#ffd95c;box-shadow:0 0 0 3px rgba(255,217,92,.4),0 0 8px #ffd95c}
+.sternenkarte button.ziel span{color:#ffd95c;font-weight:700}
+.karte-schiff{position:absolute;color:#3ef0ff;font-size:14px;line-height:1;pointer-events:none}
+.planet-marker{position:absolute;left:0;top:0;pointer-events:none;z-index:2;display:flex;align-items:center;gap:4px;margin:-10px 0 0 -6px;color:#eef2fa;font-size:13px;font-weight:700;text-shadow:0 1px 2px #000,0 0 4px #000;white-space:nowrap}
+.planet-marker .pfeil{visibility:hidden;color:#3ef0ff;font-size:16px}
+.planet-marker.aussen .pfeil{visibility:visible}
+.planet-marker.ziel{color:#ffd95c}.planet-marker.ziel .pfeil{color:#ffd95c}
+.planet-marker.rechts{flex-direction:row-reverse;margin-left:auto}.planet-marker.rechts>span{position:absolute;right:22px}
+.mit-cockpit .hinweise{top:calc(68px + env(safe-area-inset-top))}
+.cockpit.mahnen{animation:mahnen .4s steps(2) infinite}
+@keyframes mahnen{50%{border-color:#ffd95c;color:#ffd95c}}
+@media (max-height:500px){
+  .cockpit{font-size:13px;padding:4px 10px;top:calc(8px + env(safe-area-inset-top))}
+  .hinweise{width:min(380px,50%)}.hinweis{padding:6px 10px;font-size:13px}
+  .mit-cockpit .hinweise{top:calc(44px + env(safe-area-inset-top))}
+  .sternenkarte{left:calc(100px + env(safe-area-inset-left));top:calc(28px + env(safe-area-inset-top));width:100px;height:100px}
+}
+.fadenkreuz.fahrzeug{width:44px;height:44px;margin:-22px 0 0 -22px;mix-blend-mode:normal;border-radius:50%;border:2px solid rgba(62,240,255,.9);box-sizing:border-box;box-shadow:0 0 0 1px rgba(0,0,0,.5),inset 0 0 0 1px rgba(0,0,0,.4);
+  background:radial-gradient(circle,#3ef0ff 0 2px,transparent 3px),linear-gradient(#3ef0ff,#3ef0ff) center top/2px 9px no-repeat,linear-gradient(#3ef0ff,#3ef0ff) center bottom/2px 9px no-repeat,linear-gradient(#3ef0ff,#3ef0ff) left center/9px 2px no-repeat,linear-gradient(#3ef0ff,#3ef0ff) right center/9px 2px no-repeat}
+.fadenkreuz.fahrzeug.ziel{border-color:#ff4a5c;transform:scale(.85);transition:transform .1s;
+  background:radial-gradient(circle,#ff4a5c 0 3px,transparent 4px),linear-gradient(#ff4a5c,#ff4a5c) center top/2px 11px no-repeat,linear-gradient(#ff4a5c,#ff4a5c) center bottom/2px 11px no-repeat,linear-gradient(#ff4a5c,#ff4a5c) left center/11px 2px no-repeat,linear-gradient(#ff4a5c,#ff4a5c) right center/11px 2px no-repeat}
+.controller-hilfe{position:absolute;right:calc(14px + env(safe-area-inset-right));top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:5px;pointer-events:none;z-index:2;background:rgba(14,11,46,.55);border:1px solid rgba(62,240,255,.35);padding:8px 10px;color:#eef2fa;font-size:13px;font-weight:600}
+.ch-zeile{display:flex;align-items:center;gap:7px;white-space:nowrap;text-shadow:0 1px 2px #000}
+.ch-taste{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 5px;box-sizing:border-box;border-radius:6px;background:#2b2f3a;border:1px solid #6b7385;font-size:11px;font-weight:800;color:#fff}
+.ch-taste.a,.ch-taste.b,.ch-taste.x,.ch-taste.y,.ch-taste.rund{border-radius:50%;width:24px;padding:0;font-size:13px}
+.ch-taste.a{background:#2f8f3a;border-color:#6fd18a}.ch-taste.b{background:#b8323a;border-color:#ff7a80}.ch-taste.x{background:#2a5fbf;border-color:#7fb0ff}.ch-taste.y{background:#b89a1c;border-color:#ffe07a;color:#1b1b1b}
+.ch-taste.kreuz{border-radius:3px;font-size:10px}
+.ch-symbol{width:20px;text-align:center}
+
+/* Werkbank (Stufe 6a) */
+.wb{display:flex;flex-wrap:wrap;gap:14px}
+.wb-liste{flex:1 1 220px;min-width:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:6px;align-content:start}
+.wb-detail{flex:2 1 280px;min-width:0;font-size:14px}.wb-detail h3{margin:0 0 6px}
+.wb-rezept{flex-direction:column;min-height:72px;padding:4px;font-size:11px}.wb-rezept.an{outline:3px solid #ffd95c}
+.wb-rezept img,.wb-opt img,.wb-kosten img{width:24px;height:24px;image-rendering:pixelated;vertical-align:middle}
+.wb-wahl{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin:6px 0}
+.wb-opt{flex-direction:column;min-height:0;padding:3px 5px;font-size:10px;border:3px solid #3a3a5a}.wb-opt.an{outline:3px solid #ffd95c}
+.wb-kostenzeile{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.wb-kosten.fehlt{color:#ff7f7f}
+
+/* Schlafen */
+.schlaf{position:absolute;inset:0;background:#05060f;color:#9fb3ff;display:flex;align-items:center;justify-content:center;font-size:28px;z-index:6;pointer-events:none}
+.schlaf[hidden]{display:none}
+
+/* Fahrzeugbau (Stufe 6b) */
+.wb-fz{font-size:26px;line-height:1.1}
+.wb-farbe{width:28px;height:28px;min-height:0;padding:0;border:3px solid #3a3a5a;border-radius:6px}.wb-farbe.an{outline:3px solid #ffd95c}
+.wb-fzwerte{margin:8px 0;color:#aab3d6}

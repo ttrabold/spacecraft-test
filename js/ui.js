@@ -1,6 +1,6 @@
 // Oberfläche: Weltliste, Neue Welt, Pause, Einstellungen, Blockauswahl, HUD und Hinweise
 SC.Einstellungen = {
-  standard: function(){ return { sichtweite: matchMedia("(pointer: coarse)").matches ? 6 : 10, empfindlichkeit: 1, touchGroesse: 1, fpsAnzeigen: false, entwickler: false, musik: 0.5, geraeusche: 0.8, bildrate: 60, aufloesung: matchMedia("(pointer: coarse)").matches ? "hoch" : "normal" }; }, // bildrate: höchstens so viele Bilder/s, 0 = unbegrenzt
+  standard: function(){ return { sichtweite: matchMedia("(pointer: coarse)").matches ? 6 : 10, empfindlichkeit: 1, touchGroesse: 1, fpsAnzeigen: false, entwickler: false, musik: 0.5, geraeusche: 0.8, bildrate: 60, autoAnlegen: true, aufloesung: matchMedia("(pointer: coarse)").matches ? "hoch" : "normal" }; }, // bildrate: höchstens so viele Bilder/s, 0 = unbegrenzt
   lade: function(ns){ var e = SC.Einstellungen.standard(); try { var t = localStorage.getItem("sc-" + ns + ":einstellungen"); if(t) Object.assign(e, JSON.parse(t)); } catch(err){} return e; },
   speichere: function(ns, e){ try { localStorage.setItem("sc-" + ns + ":einstellungen", JSON.stringify(e)); } catch(err){} }
 };
@@ -11,8 +11,14 @@ SC.UI = function(wurzel, o){
   wurzel.innerHTML = '<div class="hud" hidden></div><div class="ebene" hidden></div><div class="hinweise"></div>';
   this.hudEl = wurzel.querySelector(".hud"); this.ebene = wurzel.querySelector(".ebene"); this.hinweisEl = wurzel.querySelector(".hinweise");
   this._aktionen = {};
-  this._klickH = function(ev){ var el = ev.target.closest && ev.target.closest("[data-aktion]"); if(el && wurzel.contains(el)) ui._klick(el); };
+  this._klickH = function(ev){
+    var el = ev.target.closest && ev.target.closest("[data-aktion]");
+    if(el && wurzel.contains(el)) ui._klick(el);
+    else if(!el && ui._beiKlickLeer && ui.ebene.contains(ev.target)) ui._beiKlickLeer(ev.target);   // Tipp auf eine Stelle ohne Aktion im offenen Fenster
+  };
   wurzel.addEventListener("click", this._klickH);
+  // Esc in einem Panel mit eigenem Menü schließt zuerst dieses (vor der Tastatursteuerung des Spiels am window)
+  wurzel.addEventListener("keydown", function(ev){ if((ev.key === "Escape" || ev.key === "Esc") && ui._beiZurueck && ui._beiZurueck()){ ev.stopPropagation(); ev.preventDefault(); } });
 };
 
 (function(){
@@ -92,6 +98,8 @@ SC.UI = function(wurzel, o){
   function mitte(el){ var r = el.getBoundingClientRect(); return r.left + r.width / 2; }
   SC.UI.prototype._zonen = function(){
     var r = this._fenster(); if(!r) return [];
+    // Eine exklusive Zone (z. B. das Aktionsmenü im Rucksack) ist, solange sie da ist, die einzige
+    var ex = r.querySelector("[data-zone].exklusiv"); if(ex) return [ex];
     var z = Array.prototype.filter.call(r.querySelectorAll("[data-zone]"), function(el){ return !el.hidden && el.querySelector("button,input,label.knopf"); });
     return z.length ? z : [r];
   };
@@ -153,6 +161,7 @@ SC.UI = function(wurzel, o){
   SC.UI.prototype.zurueck = function(){
     var r = this._fenster();
     if(!r || r === this._modal) return; // Anfrage nur mit Ja oder Nein beantworten
+    if(this._beiZurueck && this._beiZurueck()) return; // das offene Panel schließt zuerst sein eigenes Menü
     if(this._startZone){
       var z = r.querySelector('[data-zone="' + this._startZone + '"]');
       if(z && this._zone(document.activeElement) !== z){
@@ -163,7 +172,7 @@ SC.UI = function(wurzel, o){
     if(k) k.click();
   };
 
-  SC.UI.prototype.schliesse = function(){ this.ebene.hidden = true; this.ebene.innerHTML = ""; this._aktionen = {}; this._beiFokus = null; this._kurzaktion = null; this._startZone = null; this.hudEl.classList.remove("seitenpanel"); };
+  SC.UI.prototype.schliesse = function(){ this.ebene.hidden = true; this.ebene.innerHTML = ""; this._aktionen = {}; this._beiFokus = null; this._kurzaktion = null; this._beiZurueck = null; this._beiKlickLeer = null; this._startZone = null; this.hudEl.classList.remove("seitenpanel"); };
   SC.UI.prototype.offen = function(){ return !this.ebene.hidden || this.modalOffen(); };
   // Für die Controller-Hilfe: zusätzlich das Entwicklerpanel (in der Eingabe und in _fenster ein Menü)
   SC.UI.prototype.menueOffen = function(){ return this.offen() || !!(this.wurzel.querySelector(".entwickler:not([hidden])")); };
@@ -397,6 +406,7 @@ SC.UI = function(wurzel, o){
       regler("e-geraeusche", SC.T.geraeusche, 0, 1, 0.05, e.geraeusche) +
       '<label class="feld">' + esc(SC.T.aufloesung) + ' <select id="e-aufloesung">' + [["normal", SC.T.aufloesungNormal], ["hoch", SC.T.aufloesungHoch]].map(function(o){ return '<option value="' + o[0] + '"' + (e.aufloesung === o[0] ? " selected" : "") + ">" + esc(o[1]) + "</option>"; }).join("") + "</select></label>" +
       '<label class="feld">' + esc(SC.T.bildrate) + ' <select id="e-bildrate">' + [[30, "30"], [60, "60"], [0, SC.T.bildrateFrei]].map(function(o){ return '<option value="' + o[0] + '"' + (+e.bildrate === o[0] ? " selected" : "") + ">" + esc(o[1]) + "</option>"; }).join("") + "</select></label>" +
+      '<label class="feld zeile"><input type="checkbox" id="e-auto"' + (e.autoAnlegen !== false ? " checked" : "") + "> " + esc(SC.T.autoAnlegen) + "</label>" +
       '<label class="feld zeile"><input type="checkbox" id="e-fps"' + (e.fpsAnzeigen ? " checked" : "") + "> " + esc(SC.T.fpsAnzeigen) + "</label>" +
       '<label class="feld zeile"><input type="checkbox" id="e-entw"' + (e.entwickler ? " checked" : "") + "> " + esc(SC.T.entwicklerAn) + "</label>" +
       '<div class="reihe"><button class="haupt" data-aktion="fertig">' + esc(SC.T.fertig) + "</button></div>",
@@ -412,7 +422,7 @@ SC.UI = function(wurzel, o){
     }
     ui2.ebene.querySelector("#e-aufloesung").addEventListener("change", function(ev){ e.aufloesung = ev.target.value; ui.o.beiEinstellungen && ui.o.beiEinstellungen(e); });
     ui2.ebene.querySelector("#e-bildrate").addEventListener("change", function(ev){ e.bildrate = +ev.target.value; ui.o.beiEinstellungen && ui.o.beiEinstellungen(e); });
-    an("e-sicht", "sichtweite", true); an("e-maus", "empfindlichkeit", true); an("e-touch", "touchGroesse", true); an("e-musik", "musik", true); an("e-geraeusche", "geraeusche", true); an("e-fps", "fpsAnzeigen", false); an("e-entw", "entwickler", false);
+    an("e-sicht", "sichtweite", true); an("e-maus", "empfindlichkeit", true); an("e-touch", "touchGroesse", true); an("e-musik", "musik", true); an("e-geraeusche", "geraeusche", true); an("e-fps", "fpsAnzeigen", false); an("e-auto", "autoAnlegen", false); an("e-entw", "entwickler", false);
   };
 
   // --- Blockauswahl ---

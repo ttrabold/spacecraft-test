@@ -50,7 +50,7 @@ SC.KI = {};
   function schuss(g, def, ziel, d, zf, schw){
     var w = def.waffe, gen = SC.SCHWIERIGKEIT[schw] ? SC.SCHWIERIGKEIT[schw].genauigkeit : 0.6;
     var str = w.streuung * (1.6 - gen), auge = [g.pos[0], g.pos[1] + g.hoehe * 0.75, g.pos[2]];
-    var dz = [d[0], d[1] + 1.1 - g.hoehe * 0.75, d[2]];
+    var dz = [d[0], d[1] + (ziel.mitte !== undefined ? ziel.mitte : 1.1) - g.hoehe * 0.75, d[2]];
     if(w.art === "spucke" || w.art === "glut"){ var hd = Math.hypot(dz[0], dz[2]); dz[1] += hd * hd * 6 / (w.tempo * w.tempo); }   // im Bogen zielen
     var l = Math.hypot(dz[0], dz[1], dz[2]) || 1, r = [dz[0] / l + (zf() - 0.5) * str, dz[1] / l + (zf() - 0.5) * str, dz[2] / l + (zf() - 0.5) * str];
     var rl = Math.hypot(r[0], r[1], r[2]);
@@ -67,7 +67,7 @@ SC.KI = {};
     if(g.sturmBis > 0) g.sturmBis -= dt;
     var heim = ring(welt, g.pos, g.heim || g.pos), heimAbst = Math.hypot(heim[0], heim[2]);
     var d = ziel ? ring(welt, g.pos, ziel.pos) : null, abst = d ? Math.hypot(d[0], d[2]) : Infinity;
-    var sieht = !!(ziel && ziel.sichtbar && abst <= def.sicht && SC.KI.sieht(welt, [g.pos[0], g.pos[1] + g.hoehe * 0.8, g.pos[2]], [ziel.pos[0], ziel.pos[1] + 1.5, ziel.pos[2]], def.sicht));
+    var sieht = !!(ziel && ziel.sichtbar && abst <= def.sicht && SC.KI.sieht(welt, [g.pos[0], g.pos[1] + g.hoehe * 0.8, g.pos[2]], [ziel.pos[0], ziel.pos[1] + (ziel.mitte !== undefined ? ziel.mitte : 1.5), ziel.pos[2]], def.sicht));
     if(sieht){ g.bemerkt = true; g.vergessen = 6; }
     else if(g.bemerkt && (g.vergessen -= dt) <= 0) g.bemerkt = false;
     if(!ziel) g.bemerkt = false;
@@ -144,6 +144,115 @@ SC.KI = {};
       var hh = richtungZu(heim); vx = hh[0] * tempo * 0.4; vz = hh[1] * tempo * 0.4;
     }
     bewege(welt, g, vx, vz, dt);
+    return akt;
+  };
+
+  // --- Tiere (Haustiere, Spec 2026-11-04) ---
+  // Wildtiere streifen friedlich umher und weichen Spielern aus; Begleiter folgen ihrem Besitzer und kämpfen von selbst (js/haustiere.js).
+  // ctx: { spieler: [{ pos }] } für Wildtiere. Liefert Aktionen wie SC.KI.schritt (hier zunächst keine).
+  function tierGefahr(welt, x, y, z){
+    var ix = Math.floor(x), iz = Math.floor(z), id = welt.holeBlock(ix, Math.floor(y + 0.1), iz), u = welt.holeBlock(ix, Math.floor(y - 0.5), iz);
+    return id === SC.B.LAVA || id === SC.B.WASSER || u === SC.B.LAVA || u === SC.B.WASSER;
+  }
+  SC.KI.tierGefahr = tierGefahr;
+  // Begleiter neben den Besitzer setzen (n = laufende Nummer, damit mehrere Tiere nicht aufeinander stehen)
+  SC.KI.tierZuBesitzer = function(welt, g, pos, n){
+    var P = welt.planet.groesse, w = (n || 0) * 2.1 + 0.7, x = pos[0] + Math.sin(w) * 1.8, z = pos[2] + Math.cos(w) * 1.8;
+    var frei = !SC.BLOECKE[welt.holeBlock(x, pos[1] + 0.3, z)].fest && !SC.BLOECKE[welt.holeBlock(x, pos[1] + 1.3, z)].fest && !tierGefahr(welt, x, pos[1], z);
+    if(!frei){ x = pos[0]; z = pos[2]; }
+    g.pos = [SC.mod(x, P), pos[1], SC.mod(z, P)]; g.geschw = [0, 0, 0]; g.entfernen = false; g.fest = 0; g.aufBoden = false;
+  };
+  SC.KI.tier = function(welt, g, ctx, dt, zf){
+    var def = SC.TIERE[g.tierArt], akt = [];
+    if(!def){ g.entfernen = true; return akt; }
+    var drin = SC.BLOECKE[welt.holeBlock(g.pos[0], g.pos[1] + 0.3, g.pos[2])];
+    if(drin && drin.fest){
+      if(g.besitzer && ctx.besitzer){ SC.KI.tierZuBesitzer(welt, g, ctx.besitzer.pos, g.nr); return akt; }
+      aufgeben(g); if(g.entfernen) return akt;
+    }
+    g.fliegt = !!def.fliegt;   // Flieger (Eule, Leuchtkäfer) schweben, kennen weder Schwerkraft noch Lava- oder Wasserfurcht
+    var la = def.gang === "huepfen" ? 2.2 : 0.7;   // Hüpfer überspringen schmale Streifen: weiter vorausschauen
+    var gefahr = g.fliegt ? function(){ return false; } : tierGefahr;
+    g.zeit = (g.zeit || 0) + dt; g.cd = Math.max(0, (g.cd || 0) - dt);
+    var vx = 0, vz = 0;
+    if(!g.haeltStill && g.wild){
+      var sd = 3.5, weg = null;
+      (ctx.spieler || []).forEach(function(s){ var d = ring(welt, g.pos, s.pos), l = Math.hypot(d[0], d[2]); if(l < sd){ sd = l; weg = d; } });
+      if(weg){ var f = richtungZu(weg); g.richtung = [-f[0], -f[1]]; g.modus = "flieht"; g.bis = g.zeit + 0.8; }
+      else if(!g.modus || g.zeit > g.bis){
+        if(g.modus === "steht" || !g.modus){ var win = zf() * Math.PI * 2; g.richtung = [Math.sin(win), Math.cos(win)]; g.modus = "geht"; g.bis = g.zeit + 1.5 + zf() * 2.5; }
+        else { g.modus = "steht"; g.bis = g.zeit + 1 + zf() * 3; }
+      }
+      if(g.modus !== "steht" && g.richtung){
+        var t = def.tempo * (g.modus === "flieht" ? 1 : 0.35); vx = g.richtung[0] * t; vz = g.richtung[1] * t; g.blick = Math.atan2(-vx, -vz);
+        // Gefahr voraus (Lava, Wasser): stehen bleiben und neu überlegen
+        if(gefahr(welt, g.pos[0] + g.richtung[0] * la, g.pos[1], g.pos[2] + g.richtung[1] * la)){ vx = 0; vz = 0; g.modus = "steht"; g.bis = g.zeit + 0.3; }
+      }
+    } else if(!g.haeltStill && g.besitzer && ctx.besitzer){
+      // Begleiter: dem Besitzer folgen (schneller, wenn er weit weg ist); zu weit, in Lava/Wasser oder feststeckend → neben den Besitzer
+      var o = ring(welt, g.pos, ctx.besitzer.pos), dist = Math.hypot(o[0], o[2]);
+      if(dist > 24 || Math.abs(o[1]) > 12 || gefahr(welt, g.pos[0], g.pos[1], g.pos[2])){ SC.KI.tierZuBesitzer(welt, g, ctx.besitzer.pos, g.nr); return akt; }
+      var zg = ctx.ziel;
+      if(zg && dist <= 18){
+        // Kampf (ctx.ziel: ein Gegner in der Nähe des Besitzers, ctx.werte.schaden): Stil je Art
+        var dz = ring(welt, g.pos, zg.pos), dl = Math.hypot(dz[0], dz[2]), rz = richtungZu(dz), sz = [-rz[1], rz[0]], st = def.stil, tz = def.tempo;
+        g.blick = Math.atan2(-dz[0], -dz[2]);
+        if(!g.seiteZeit || g.zeit > g.seiteZeit){ g.seite = zf() < 0.5 ? -1 : 1; g.seiteZeit = g.zeit + 1.5 + zf() * 1.5; }
+        if(st === "nah" || st === "robust"){
+          if(dl > 1.1){ vx = rz[0] * tz * 1.1; vz = rz[1] * tz * 1.1; if(g.aufBoden && zf() < 0.03) g.geschw[1] = 6; }
+          else if(g.cd <= 0){ akt.push({ art: "hieb", ziel: zg.id, schaden: ctx.werte.schaden }); g.cd = st === "robust" ? 1.4 : 1.0; }
+        } else if(st === "ablenker"){
+          var ma = dl > 3.2 ? 1 : dl < 1.8 ? -1 : 0; vx = (rz[0] * ma + sz[0] * 0.9 * g.seite) * tz; vz = (rz[1] * ma + sz[1] * 0.9 * g.seite) * tz;
+          if(dl < 2.4 && g.cd <= 0){ akt.push({ art: "hieb", ziel: zg.id, schaden: ctx.werte.schaden * 0.8 }); g.cd = 1.6; }
+        } else {
+          var mf = dl < 4 ? -1 : dl > 8 ? 1 : 0; vx = (rz[0] * mf + sz[0] * 0.3 * g.seite) * tz * 0.8; vz = (rz[1] * mf + sz[1] * 0.3 * g.seite) * tz * 0.8;
+          if(dl <= 11 && g.cd <= 0){
+            var von = [g.pos[0], g.pos[1] + g.hoehe * 0.7, g.pos[2]], dy = zg.pos[1] + zg.hoehe * 0.5 - von[1], ln = Math.hypot(dz[0], dy, dz[2]) || 1;
+            akt.push({ art: "schuss", pos: von, richtung: [dz[0] / ln, dy / ln, dz[2] / ln], tempo: 26, schaden: ctx.werte.schaden, farbe: def.schussFarbe || "#ffe36b" }); g.cd = 1.3;
+          }
+        }
+        if((vx || vz) && gefahr(welt, g.pos[0] + vx * 0.2, g.pos[1], g.pos[2] + vz * 0.2)){ vx = 0; vz = 0; }
+      } else {
+        // Jedes Tier hat seinen Platz um den Besitzer (nach Nummer), damit sie nicht aufeinander stehen; weit weg: dem Besitzer nach
+        var wi = (g.nr || 0) * 2.1 + 0.7, os = dist > 6 ? o : [o[0] + Math.sin(wi) * 2.4, o[1], o[2] + Math.cos(wi) * 2.4], od = Math.hypot(os[0], os[2]);
+        if(od > 0.8){
+          var fo = richtungZu(os), tb = def.tempo * (dist > 9 ? 1.6 : dist > 6 ? 1.2 : od > 2 ? 0.9 : 0.5); vx = fo[0] * tb; vz = fo[1] * tb; g.blick = Math.atan2(-vx, -vz);
+          if(gefahr(welt, g.pos[0] + fo[0] * la, g.pos[1], g.pos[2] + fo[1] * la)){ vx = 0; vz = 0; }
+        } else g.blick = Math.atan2(-o[0], -o[2]);
+      }
+    }
+    // Abstand halten: andere Tiere und der Besitzer schieben sich gegenseitig sanft auseinander (Begleiter laufen nicht ineinander)
+    if(!g.haeltStill && (g.besitzer || g.wild)){
+      var ab = function(pos, radius){
+        var d = ring(welt, pos, g.pos), l = Math.hypot(d[0], d[2]), mind = (g.breite + radius) / 2 + 0.55;
+        if(l >= mind) return;
+        if(l < 0.01){ d = [Math.cos(g.id || 1), 0, Math.sin(g.id || 1)]; l = 1; }
+        var k = (mind - l) / mind * 3.5; vx += d[0] / l * k; vz += d[2] / l * k;
+      };
+      (ctx.nachbarn || []).forEach(function(n){ if(n !== g && Math.abs(n.pos[1] - g.pos[1]) < 2) ab(n.pos, n.breite); });
+      if(g.besitzer && ctx.besitzer) ab(ctx.besitzer.pos, 0.6);
+    }
+    // Gangart: Hüpfer bewegen sich nur in Sprüngen (am Boden Pause, in der Luft Schwung in Sprungrichtung); Schleicher gehen stockend; Schlängler pendeln seitlich
+    if(def.gang === "huepfen" && !g.fliegt){
+      if(g.aufBoden){
+        g.hopWait = (g.hopWait === undefined ? 0 : g.hopWait) - dt; g.hopV = null;
+        if((vx || vz) && g.hopWait <= 0){ g.geschw[1] = def.hupf; g.hopWait = def.pause[0] + zf() * (def.pause[1] - def.pause[0]); g.hopV = [vx * 2.2, vz * 2.2]; }
+        vx = 0; vz = 0;
+      } else if(g.hopV){ vx = g.hopV[0]; vz = g.hopV[1]; }
+    } else if(def.gang === "schleichen"){
+      g.schl = (g.schl || 0) + dt; if(Math.floor(g.schl / 0.7) % 2 === 1){ vx = 0; vz = 0; }
+    } else if(def.gang === "schlaengeln" && (vx || vz)){
+      var sl = Math.hypot(vx, vz), sw = Math.sin(g.zeit * 5) * 0.6; vx += -vz / sl * sw * sl; vz += vx / sl * sw * sl;
+    }
+    // Flieger halten ihre Höhe: Wildtiere über dem Boden, Begleiter über dem Besitzer, mit leichtem Auf und Ab
+    if(g.fliegt){
+      var ziel = g.besitzer && ctx.besitzer ? ctx.besitzer.pos[1] : (function(){ for(var y = Math.floor(g.pos[1]); y > g.pos[1] - 12; y--) if(SC.BLOECKE[welt.holeBlock(g.pos[0], y, g.pos[2])].fest) return y + 1; return g.pos[1]; })();
+      g.geschw[1] = Math.max(-4, Math.min(4, (ziel + (def.flughoehe || 1.6) + Math.sin(g.zeit * 2 + (g.id || 0)) * 0.25 - g.pos[1]) * 3));
+    }
+    g.geschw[0] = vx; g.geschw[2] = vz;
+    bewege(welt, g, vx, vz, dt);
+    if(g.entfernen && g.besitzer && ctx.besitzer){ SC.KI.tierZuBesitzer(welt, g, ctx.besitzer.pos, g.nr); return akt; }   // festgesteckt
+    if(g.wild && gefahr(welt, g.pos[0], g.pos[1], g.pos[2])) g.entfernen = true;
     return akt;
   };
 })();

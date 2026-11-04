@@ -7,7 +7,7 @@
 
   // Abbauen: Fortschritt je Ziel; fertig → Block in den Rucksack (voll → bleibt stehen)
   S.abbauFortschritt = function(ziel, dt){
-    if(this.kampf.waffe()) return false;   // Mit ausgerüsteter Waffe wird nicht abgebaut – die Angriffstaste kämpft nur, abbauen geht nur mit leerer Hand (#127)
+    if(this.kampf.waffe() || this.kampf.netz()) return false;   // Mit ausgerüsteter Waffe (oder dem Netz) wird nicht abgebaut – die Angriffstaste kämpft nur, abbauen geht nur mit leerer Hand (#127)
     var w = this.welt, k = this.kampf, id = w.holeBlock(ziel.x, ziel.y, ziel.z);
     var schl = ziel.x + "," + ziel.y + "," + ziel.z;
     if(!this._abbau || this._abbau.schl !== schl) this._abbau = { schl: schl, t: 0 };
@@ -22,7 +22,7 @@
     return true;
   };
   S.abbauAnteil = function(ziel){
-    if(!ziel || this.kampf.waffe()) return 0;   // dieselbe Regel wie oben: mit Waffe kein Riss am Block (#127)
+    if(!ziel || this.kampf.waffe() || this.kampf.netz()) return 0;   // dieselbe Regel wie oben: mit Waffe kein Riss am Block (#127)
     if(!this._abbau || this._abbau.schl !== ziel.x + "," + ziel.y + "," + ziel.z) return 0;
     var d = SC.Abbau.zeit(this.welt.holeBlock(ziel.x, ziel.y, ziel.z));
     return isFinite(d) ? Math.min(1, this._abbau.t / d) : 0;
@@ -105,13 +105,14 @@
     if(this.render){ this.render.wesen.funken(g.pos, def.boss ? "#ffad47" : "#ffd95c", def.boss ? 60 : 24, this.spieler.pos); if(!gg || r.nah) this.render.wesen.zahl([g.pos[0], g.pos[1] + g.hoehe + 0.6, g.pos[2]], "+" + r.erfahrung + " EP", "#ffd95c", this.spieler.pos); }
     this.audio.spiele("zerfall");
     if(!gg) this.beuteAuswerfen(g.pos, r.beute.map(SC.Beute.alsSache));
+    if(r) this._tiereErfahrung((r && r.erfahrung) || 0, g.pos);
     if(r.aufstiege){ this.audio.spiele("aufstieg"); this.ui.hinweis(SC.T.stufeAuf + " " + SC.T.stufe + " " + k.werte.stufe, 3000); }
     return r;
   };
 
   // Eigener Zustand für den Raum (Ziele der Gegner, „in der Nähe“, zustand-Nachricht)
   S.raumIch = function(offen){ var sp = this.spieler, k = this.kampf, surv = sp.modus === "survival";
-    return { pos: sp.pos, blick: sp.blick, modus: sp.modus, stufe: k.werte.stufe, ausr: { ruestung: surv ? k.ausruestung : null, waffe: surv ? k.waffe() : null }, menue: !!offen, lebt: !k.besiegt(), schlaeft: !!sp.schlaeft, hieb: this._hiebN ? { n: this._hiebN, kombo: this._hiebKombo } : undefined, blockt: !!k.blockt, lp: Math.ceil(k.werte.lp), lpMax: k.werte.lpMax, schild: Math.ceil(k.werte.schild), schildMax: k.werte.schildMax, tageszeit: this.tageszeit, sitzt: typeof sp.sitzt === "number" ? sp.sitzt : null, fz: this._fzLage(), all: this._allLage() }; };
+    return { pos: sp.pos, blick: sp.blick, modus: sp.modus, stufe: k.werte.stufe, ausr: { ruestung: surv ? k.ausruestung : null, waffe: surv ? k.waffe() : null }, menue: !!offen, lebt: !k.besiegt(), schlaeft: !!sp.schlaeft, hieb: this._hiebN ? { n: this._hiebN, kombo: this._hiebKombo } : undefined, blockt: !!k.blockt, lp: Math.ceil(k.werte.lp), lpMax: k.werte.lpMax, tiere: this.all ? [] : (this._tiereListe || []), schild: Math.ceil(k.werte.schild), schildMax: k.werte.schildMax, tageszeit: this.tageszeit, sitzt: typeof sp.sitzt === "number" ? sp.sitzt : null, fz: this._fzLage(), all: this._allLage() }; };
   // Gast: Blöcke nur ändern, solange die Verbindung steht (sonst ginge der Wunsch verloren)
   S._blockErlaubt = function(){ return !(this.raum instanceof SC.Gast) || this.raum.status === "verbunden"; };
 
@@ -163,10 +164,12 @@
         }
         if(k.ueberhitztBis <= t) this._heiss = false;
         this._abbau = null;   // mit Waffe läuft nie ein Abbau → kein Riss am Block (#127)
+      } else if(k.netz() && e.abbauen){ this._fangVersuch(); this._abbau = null;   // Fangnetz: Angriffstaste fängt ein Tier
       } else if(ziel && e.abbauenGehalten) this.abbauFortschritt(ziel, dt);
       else this._abbau = null;
       // Setzen, Kiste öffnen
-      if(e.setzen && ziel){
+      if(e.setzen && this._tierBenutzen()){ /* Tier gestreichelt oder gefüttert */ }
+      else if(e.setzen && ziel){
         if(this.benutzeBlock(ziel)){ /* Werkbank geöffnet */ }
         else if(w.holeBlock(ziel.x, ziel.y, ziel.z) === SC.B.KISTE && gast) gast.kiste(ziel.x, ziel.y, ziel.z);
         else if(w.holeBlock(ziel.x, ziel.y, ziel.z) === SC.B.KISTE && gastgeber){ if(gastgeber.oeffneKiste(ziel.x, ziel.y, ziel.z).length) a.spiele("kiste"); }
@@ -195,9 +198,11 @@
       if(g.art === "gegner"){
         if(!gast){
           if(g.entfernen){ s.auftauchen._entferne(g, false); s.auftauchen.gegnerBesiegt(g, s.daten.spielzeit || 0); return; }
-          SC.KI.schritt(w, g, ziele ? SC.Raum.zielFuer(w, g, ziele) : zielSp, dt, zf, schw).forEach(function(akt){
+          var zl0 = ziele ? SC.Raum.zielFuer(w, g, ziele) : zielSp, zl = s._tierZielFuer(g, zl0) || zl0;   // Begleiter (Haustiere) können das Ziel sein
+          SC.KI.schritt(w, g, zl, dt, zf, schw).forEach(function(akt){
             if(akt.art === "ruf"){ var rd = SC.GEGNER[akt.gegnerArt], rs = Math.max(1, g.stufe - 2), re = SC.Wesen.neu(w, "gegner", { gegnerArt: akt.gegnerArt, stufe: rs, pos: akt.pos, heim: akt.pos.slice(), lp: rd.lp(rs), lpMax: rd.lp(rs), breite: rd.breite, hoehe: rd.hoehe, ort: g.ort, gerufenVon: g.id, bemerkt: true }); return; }
             if(akt.art === "schuss"){ SC.Wesen.neu(w, "geschoss", { pos: akt.pos, richtung: akt.richtung, tempo: akt.tempo, schaden: akt.schaden, team: "gegner", art: akt.geschossArt, lebensdauer: 3, farbe: akt.farbe }); a.spiele(akt.geschossArt === "spucke" ? "spucker" : "blaster"); }
+            else if(zl && zl.tier) s._tierGetroffen(zl.tier, g, akt);
             else { var r = gastgeber ? gastgeber.gegnerAktion(g, akt, ziele) : k.gegnerAktion(g, akt); if(r && r.schaden > 0) a.spiele("getroffen"); else if(r && r.abgeprallt) a.spiele("blocken"); }
           });
         }
@@ -211,11 +216,14 @@
         if(r2.treffer === "wesen" && g.optisch){ SC.Wesen.entferne(w, g.id); return; } // optisch: verschwindet am Gegner
         if(r2.treffer === "wesen"){
           var ziel2 = w.wesen.get(r2.id), tg = k.trifftGegner(ziel2, g.schaden, g.geschw || g.richtung, g);
+          if(tg.abgeprallt && g.tier){ SC.Wesen.entferne(w, g.id); a.spiele("abprall"); return; }   // Tierschüsse prallen nicht zurück (sonst träfen sie Besitzer und Mitspieler)
           if(tg.abgeprallt){ g.team = "gegner"; g.geschw = [-g.geschw[0], -g.geschw[1], -g.geschw[2]]; g.richtung = [-g.richtung[0], -g.richtung[1], -g.richtung[2]]; g.lebensdauer = 2; a.spiele("abprall"); return; }
           s._zahl(ziel2, tg.schaden); if(tg.besiegt) s.besiege(ziel2); else a.spiele("treffer");
         } else if(r2.treffer === "spieler"){
           var ts = gastgeber && g.team === "spieler" ? gastgeber.pvpTrifft(r2.id, g.schaden, g.geschw || g.richtung, g.schuetze, g) : gastgeber ? gastgeber.geschossTrifft(g, r2.id) : k.trifftSpieler(g.schaden, g.geschw || g.richtung, g);
           if(ts) a.spiele(ts.abgeprallt ? "abprall" : ts.schaden > 0 ? "getroffen" : "blocken");
+        } else if(r2.treffer === "tier"){
+          var tz2 = w.wesen.get(r2.id); if(tz2) s._tierTreffer(tz2, g.schaden * (SC.SCHWIERIGKEIT[schw] || SC.SCHWIERIGKEIT.normal).schaden);
         } else if(r2.treffer === "block" && g.abprall && !g.abgeprallt){
           // Abprall-Schüsse prallen einmal von der Wand ab
           var gv = g.geschw, m = Math.abs(gv[0]) > Math.abs(gv[1]) ? (Math.abs(gv[0]) > Math.abs(gv[2]) ? 0 : 2) : (Math.abs(gv[1]) > Math.abs(gv[2]) ? 1 : 2);
@@ -258,6 +266,7 @@
   S._beuteAnlegen = function(g){
     if(this.einstellungen && this.einstellungen.autoAnlegen === false) return false;
     var r = this.kampf.automatischAnlegen(g); if(!r) return false;
+    if(this.ui.rucksackNeu) this.ui.rucksackNeu();   // Mehrspieler: das Spiel läuft bei offenem Rucksack weiter
     var haupt = Object.keys(SC.GEGENSTAENDE[g.art].haupt)[0], wert = function(x){ return x && x.werte ? (x.werte[haupt] || 0) : 0; };
     this.ui.hinweis(SC.T.autoAngelegt.replace("{name}", g.name).replace("{wert}", SC.T.werteName[haupt] || haupt).replace("{alt}", wert(r.alt)).replace("{neu}", wert(g)), 2500);
     return true;

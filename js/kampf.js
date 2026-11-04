@@ -4,6 +4,7 @@ SC.Kampf = function(welt, spieler, daten, zf){
   this.welt = welt; this.spieler = spieler; this.daten = daten; this.zf = zf;
   var s = daten.spieler;
   this.rucksack = new SC.Rucksack(s.rucksack);
+  this.kaefig = new SC.Kaefig(s.kaefig);
   this.ausruestung = JSON.parse(JSON.stringify(s.ausruestung || { helm: null, brust: null, handschuhe: null, stiefel: null, schild: null }));
   this.werte = { stufe: s.stufe || 1, erfahrung: s.erfahrung || 0, lp: 0, lpMax: 0, schild: 0, schildMax: 0, schutz: 0, schadenBonus: 0, tempoBonus: 0, erholungBonus: 0 };
   this.ruestungAnwenden();
@@ -26,7 +27,7 @@ SC.Kampf = function(welt, spieler, daten, zf){
   K.automatischAnlegen = function(g){
     var platz = SC.GEGENSTAENDE[g.art] && SC.GEGENSTAENDE[g.art].platz, pl = this.rucksack.plaetze, i = -1;
     if(!AUTO[platz]) return null;
-    for(var j = 0; j < pl.length; j++) if(pl[j] && pl[j].gegenstand && pl[j].gegenstand.id === g.id){ i = j; break; }
+    for(var j = 0; j < pl.length; j++) if(pl[j] && pl[j].gegenstand && pl[j].gegenstand === g){ i = j; break; }
     var alt = this.ausruestung[platz] || null;
     if(i < 0 || !SC.Beute.eindeutigBesser(g, alt)) return null;
     this.ausruestung[platz] = g; pl[i] = alt ? { gegenstand: alt } : null;
@@ -56,6 +57,9 @@ SC.Kampf = function(welt, spieler, daten, zf){
     var s = this.rucksack.plaetze[this.spieler.auswahl], g = s && s.gegenstand;
     return g && SC.GEGENSTAENDE[g.art] && SC.GEGENSTAENDE[g.art].platz === "waffe" ? g : null;
   };
+
+  // Das Fangnetz in der gehaltenen Schnellleistenzelle (Block, kein Waffenplatz; Spec Haustiere) – oder null
+  K.netz = function(){ var s = this.rucksack.plaetze[this.spieler.auswahl]; return s && s.block === SC.B.NETZ ? s : null; };
 
   K.angriff = function(jetzt, richtung){
     this.uhr = jetzt;

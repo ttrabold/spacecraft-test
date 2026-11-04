@@ -177,6 +177,7 @@ SC.Spiel.startpunkt = function(planet){
       if(ew.offen()){ ew.verberge(); this.beiEntwicklerZu(); } else this._entwicklerAuf();
       return;
     }
+    this._fangEingabe(e);   // Fang-Minispiel sperrt Bewegung und Blick
     if(!offen){
       sp.blick[0] += e.blickDx; sp.blick[1] = Math.max(-1.55, Math.min(1.55, sp.blick[1] + e.blickDy));
       if(e.menue){ this.pause(); return; }
@@ -185,11 +186,13 @@ SC.Spiel.startpunkt = function(planet){
         var kp = this.kampf, ich = this; this.eingabe.gebeMausFrei();
         ui.zeigeBlockauswahl(function(id){ sp.schnellleiste[sp.auswahl] = id; ui.hinweis(SC.BLOECKE[id].name, 1200); }, {
           ausruestung: true,
+          beiTier: function(art){ var t = SC.Tier.neu(art); ui.hinweis(kp.kaefig.lege(t) ? SC.T.neuGefangen.replace("{name}", t.name + " (" + SC.TIERE[art].name + ")") : SC.T.kaefigVoll, 2000); },
           beiMaterial: function(id){ var rest = kp.rucksack.lege({ block: id, anzahl: SC.Rucksack.STAPEL }); ui.hinweis(rest === SC.Rucksack.STAPEL ? SC.T.rucksackVoll : SC.BLOECKE[id].name + " × " + (SC.Rucksack.STAPEL - rest) + " → " + SC.T.rucksackTitel, 1500); },
           beiFahrzeug: function(art){ var f = ich.fahrzeugHinstellen(art); if(f) ui.hinweis(SC.FAHRZEUGE[art].name, 1500); },
           beiGegenstand: function(art, selt){ var g = SC.Beute.erzeuge(SC.zufall((Math.random() * 4294967296) >>> 0), { stufe: kp.werte.stufe, art: art, mindest: selt }); g.seltenheit = selt; if(kp.rucksack.lege({ gegenstand: g })) ui.hinweis(SC.T.rucksackVoll); else ui.hinweis(g.name + " → " + SC.T.rucksackTitel, 1500); }
         });
       }
+      if(e.kaefig && sp.modus !== "zuschauer" && !this.all && !this._imFahrzeug()){ this.eingabe.gebeMausFrei(); this.zeigeKaefig(); }
       if(e.ansicht) sp.ansicht = sp.ansicht === "ich" ? "aussen" : "ich";
       if(e.benutzen) this.benutzen();
       if(e.platz) this.platzWechseln();
@@ -198,13 +201,14 @@ SC.Spiel.startpunkt = function(planet){
     }
     var vorBoden = sp.aufBoden, vy = sp.geschw[1];
     if(this.all){ // im All: kein Boden, keine Gegner des Planeten
-      this._allBild(e, dt, offen); this._hudSurvival(sp.modus === "survival", null, null);
+      this._allBild(e, dt, offen); this._hudSurvival(sp.modus === "survival", null, null); this._tiere(dt, offen);   // Tiere warten im Käfig
       if((this._musikZeit = (this._musikZeit || 0) + dt) > 0.5){ this._musikZeit = 0; this.audio.musikTakt("all", true); }
     } else {
       if(this._imFahrzeug()) this._fahren(e, dt, offen);
       else if(!sp.schlaeft){ sp.schritt(w, e, dt); this._geraeusche(e, vorBoden, vy, dt); }
       this._fahrzeugeBild(dt);
       this._survival(e, dt, offen, t);
+      this._tiere(dt, offen);
       this._fahrzeugTakt(dt);
     }
     this.tageszeit = SC.mod(this.tageszeit + dt / 1200 * this.zeitTempo, 1);
@@ -248,9 +252,20 @@ SC.Spiel.startpunkt = function(planet){
     });
   };
 
+  // Käfig-Panel: Aktionen gehen an die Begleiter-Verwaltung (js/haustiere.js)
+  SC.Spiel.prototype._kaefigOptionen = function(){
+    var s = this, k = this.kampf;
+    return { beiRaus: function(id){ return s._tierRaus(id); }, beiRein: function(id){ s._tierRein(id); }, beiUmbenennen: function(id, n){ k.kaefig.umbenennen(id, n); },
+      beiFreilassen: function(id){ s._tierRein(id); k.kaefig.freilassen(id); } };
+  };
+  SC.Spiel.prototype.zeigeKaefig = function(){
+    var s = this, o = this._kaefigOptionen(); o.beiFertig = function(){ s._weiter(); };
+    this.ui.zeigeKaefig(this.kampf.kaefig, o);
+  };
   SC.Spiel.prototype.zeigeRucksack = function(){
     var s = this;
     this.ui.zeigeRucksack(this.kampf, {
+      kaefig: this._kaefigOptionen(),
       beiWegwerfen: function(sache){ if(sache) s.beuteAuswerfen([s.spieler.pos[0] - Math.sin(s.spieler.blick[0]) * 1.5, s.spieler.pos[1], s.spieler.pos[2] - Math.cos(s.spieler.blick[0]) * 1.5], [sache], { sperre: 4, weit: true, richtung: Math.atan2(-Math.cos(s.spieler.blick[0]), -Math.sin(s.spieler.blick[0])) }); },
       beiFertig: function(){ s._weiter(); }
     });
@@ -451,6 +466,8 @@ SC.Spiel.startpunkt = function(planet){
         beiBereit: function(){ var c = chunks; chunks = {}; s._gastBereit(gast, c); },
         beiStatus: function(st, info){ s._gastStatus(gast, st, info || {}); },
         beiTeleport: function(p){ s._teleportiert(p); },
+        beiTierStand: function(n){ s._tierStand(n); },
+        beiFangNein: function(id){ if(s._fang && s._fang.id === id){ s._fang = null; s._fangDruck = false; s.ui.fangRing(null); s.ui.hinweis(SC.T.fangBelegt, 2000); } },
       beiZauberAntwort: function(n){ if(!n.ja) s.ui.hinweis(n.grund === "bett" ? SC.T.zauberKeinBett : n.grund === "warte" ? SC.T.zauberWartet : SC.T.zauberAbgelehnt, 3000); },
       beiBlockZurueck: function(x, y, z, id, wunsch){ if(s.raum === gast) s._blockZurueck(id, wunsch); },
         beiNachricht: function(n){ s._gastNachricht(gast, n); },
@@ -504,6 +521,7 @@ SC.Spiel.startpunkt = function(planet){
       beiTreffer: function(r){ s.audio.spiele(r.abgeprallt ? "abprall" : r.schaden > 0 ? "getroffen" : "blocken"); },
       beiBesiegt: function(n, auf){
         if(n.kiste) s.audio.spiele("kiste");
+        s._tiereErfahrung(n.erfahrung, n.pos);
         if(n.erfahrung > 0 && n.pos && s.render && s.render.wesen) s.render.wesen.zahl([n.pos[0], n.pos[1] + 2, n.pos[2]], "+" + n.erfahrung + " EP", "#ffd95c", s.spieler.pos);
         if(auf){ s.audio.spiele("aufstieg"); s.ui.hinweis(SC.T.stufeAuf + " " + SC.T.stufe + " " + s.kampf.werte.stufe, 3000); s.speichere("stufe"); }
       },

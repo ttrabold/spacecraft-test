@@ -112,7 +112,7 @@ SC.T = {
   zauberFrage: "{name} möchte mit der Zauberkugel alle zu deinem Bett zurückholen. Einverstanden?",
   werkbankTitel: "Werkbank", handwerkTitel: "Handwerk", handwerk: "🛠 Handwerk", herstellen: "Herstellen", hergestellt: "Hergestellt",
   metallWahl: "Metall", kristallWahl: "Kristall", wahlTipp: "Wähle ein Rezept.", wahlMetallKristall: "Wähle Metall und Kristall.", fehltMaterial: "Dir fehlen noch Rohstoffe.",
-  rezeptName: { netz: "Fangnetz", tierfutter: "Tierfutter", zauberkugel: "Zauberkugel", wolle: "Rote Wolle", bett: "Bett", bretter: "Holzbretter", werkbank: "Werkbank", fenster: "Fenster", fackel: "Fackeln", zaun: "Zaun", leiter: "Leitern", tuer: "Tür", truhe: "Truhe" },
+  rezeptName: { eimer: "Eimer", netz: "Fangnetz", tierfutter: "Tierfutter", zauberkugel: "Zauberkugel", wolle: "Rote Wolle", bett: "Bett", bretter: "Holzbretter", werkbank: "Werkbank", fenster: "Fenster", fackel: "Fackeln", zaun: "Zaun", leiter: "Leitern", tuer: "Tür", truhe: "Truhe" },
   kristallName: { blau: "Blau", gruen: "Grün", rot: "Rot", gelb: "Gelb", violett: "Violett", weiss: "Weiß" },
   ausruestungTitel: "Ausrüstung", materialienTitel: "Materialien",
   anlegen: "Anlegen", ablegen: "Ablegen", verschieben: "Verschieben", wohin: "Wohin? Tippe einen Platz an.", rucksackInfoLeer: "Leerer Platz", inSchnellleiste: "In die Schnellleiste", wegwerfen: "Wegwerfen",
@@ -153,6 +153,7 @@ SC.T = {
   ewBauwerk: { dungeon: "Dungeon", herrenhaus: "Herrenhaus", station: "Station", lager: "Lager" },
   ewFlug: "Fluggeschwindigkeit",
   ewGrenzen: "Chunk-Grenzen anzeigen",
+  ewFluss: "Wasser und Lava fließen",
   ewErscheinen: "Erscheinen", ewGegnerWeg: "Alle Gegner weg", ewErzeugen: "In den Rucksack", ewStufeSetzen: "Stufe setzen", ewBauwerkeReset: "Bauwerke zurücksetzen", ewRohstoffe: "Rohstoffe geben", ewTiere: "Tiere geben", ewUnverwundbar: "Unverwundbar",
   brauchtNeuereVersion: "Diese Welt braucht eine neuere Spielversion.",
   importKaputt: "Diese Datei ist keine Spacecraft-Welt oder sie ist beschädigt.",
@@ -167,7 +168,7 @@ SC.T = {
     lava: "Lava", eis: "Eis", schlamm: "Schlamm", basalt: "Basalt",
     eisenerz: "Eisenerz", titan: "Titan", glutstahl: "Glutstahl", moorsilber: "Moorsilber", sternenmetall: "Sternenmetall",
     kristallBlau: "Blauer Kristall", kristallGruen: "Grüner Kristall", kristallRot: "Roter Kristall", kristallGelb: "Gelber Kristall", kristallViolett: "Violetter Kristall", kristallWeiss: "Weißer Kristall",
-    schaltkreis: "Schaltkreis", chitin: "Chitinplatte", netz: "Fangnetz", tierfutter: "Tierfutter", werkbank: "Werkbank", fackel: "Fackel", zaun: "Zaun", leiter: "Leiter", tuer: "Tür", truhe: "Truhe", bett: "Bett", zauberkugel: "Zauberkugel"
+    schaltkreis: "Schaltkreis", chitin: "Chitinplatte", eimer: "Eimer", eimerWasser: "Wassereimer", eimerLava: "Lavaeimer", netz: "Fangnetz", tierfutter: "Tierfutter", werkbank: "Werkbank", fackel: "Fackel", zaun: "Zaun", leiter: "Leiter", tuer: "Tür", truhe: "Truhe", bett: "Bett", zauberkugel: "Zauberkugel"
   },
   // Spielanleitung (Menü und docs/ANLEITUNG.md): Abschnitte [Titel, Punkte]; „Taste – Bedeutung“ zeigt die Taste fett
   anleitung: {
@@ -280,6 +281,15 @@ SC.T = {
         "Streicheln (Rechtsklick, Setzen-Knopf oder LT, wenn du das Tier ansiehst) macht es 2 Minuten stärker. Mit Tierfutter in der Hand macht Füttern es 5 Minuten stärker und heilt es. Tierfutter baust du an der Werkbank aus Blättern und Leuchtpilzen.",
         "Wenn du mit deinem Tier Gegner besiegst, wird es stärker. Es kann aber nie eine höhere Stufe haben als du.",
         "Spielt ihr zusammen, hat jeder seine eigenen Tiere."
+      ]],
+      ["Wasser und Lava", [
+        "Wasser fließt wie in Minecraft: Gräbst du neben einem See, läuft das Wasser in das Loch. Ein Wasserblock läuft den Hang hinunter, zur Seite aber nur ein paar Blöcke weit.",
+        "Mit einem Block baust du einen Damm: Setz ihn ins fließende Wasser, dann läuft der Strom dahinter aus. Seen und Meere laufen nie leer.",
+        "Fließendes Wasser schiebt dich ein wenig mit. Schwimmen ist aber stärker, du kommst immer wieder heraus.",
+        "Lava fließt langsamer und nicht so weit. Wo Lava auf Wasser trifft, wird sie zu Basalt. So kannst du einen Lavastrom mit Wasser stoppen.",
+        "Den Eimer baust du an der Werkbank aus 3 Eisenerz. Nimm ihn in die Hand und schau auf Wasser oder Lava, die still steht: Mit Rechtsklick, dem Setzen-Knopf oder LT schöpfst du sie in den Eimer.",
+        "Mit dem vollen Eimer gießt du genauso wieder aus: Dort entsteht ein neuer Block Wasser oder Lava, der losfließt. Gieß zwei Eimer Wasser mit einer Lücke dazwischen aus, dann füllt sich die Lücke von selbst – ein Brunnen, der nie leer wird.",
+        "Im Kreativmodus gibt es Wassereimer und Lavaeimer in der Blockauswahl. Sie werden nie leer."
       ]],
       ["Fahrzeuge", [
         "Den Schwebeflitzer findest du am Startpunkt. Kraterkäfer stehen bei Lagern, Kometenjäger bei Stationen, Schwebeflitzer auch bei Herrenhäusern.",

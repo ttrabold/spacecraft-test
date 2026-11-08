@@ -136,6 +136,7 @@ SC.Gastgeber = function(o){
   // Jede Blockänderung in der Welt des Gastgebers geht an alle Gäste, außer an den, von dem sie kam (Quelle "netz:<id>")
   G._blockGeaendert = function(b){
     if(this._zu) return;
+    if(b.quelle === "fluss"){ (this._fluss || (this._fluss = [])).push(b.x, b.y, b.z, b.id); return; }   // Fließen: gebündelt je Bild (takt)
     var q = String(b.quelle || ""), urheber = q.indexOf("netz:") === 0 ? q.slice(5) : undefined;
     this.sendeAlle({ t: "block", x: b.x, y: b.y, z: b.z, id: b.id }, urheber);
   };
@@ -151,6 +152,7 @@ SC.Gastgeber = function(o){
   // 15 Hz: jedem Gast den Zustand der anderen Spieler (ausr nur, wenn sie sich für diesen Empfänger geändert hat) und die Wesen-Liste;
   // 1 Hz: zeit {tageszeit (aus ich.tageszeit, sonst daten.tageszeit), modus, schwierigkeit}
   G.takt = function(dt, ich){
+    if(this._fluss && this._fluss.length){ if(!this._zu) this.sendeAlle({ t: "bloecke", l: this._fluss }); this._fluss = []; }   // Fließen: alle Zellen dieses Bildes als [x, y, z, id, …]
     var s = this, d = s.daten; if(s._zu) return;
     s._takt += dt; s._zeitTakt += dt;
     var zust = s._takt >= SC.RAUM_TAKT, zeit = s._zeitTakt >= SC.RAUM_ZEIT_TAKT;
@@ -369,6 +371,8 @@ SC.Gast = function(o){
     },
     wesen: function(n){ this.wesen = n.liste || []; },
     zeit: function(n){ this._bestaetige(n.wunschNr); if(typeof n.tageszeit === "number") this.tageszeit = n.tageszeit; ruf(this.o.beiNachricht, n); },
+    // Fließen beim Gastgeber: viele Zellen auf einmal [x, y, z, id, …]
+    bloecke: function(n){ var w = this.welt, l = n.l; if(!w || !Array.isArray(l)) return; for(var i = 0; i + 3 < l.length; i += 4) if(SC.BLOECKE[l[i + 3]]) w.setzeBlock(l[i], l[i + 1], l[i + 2], l[i + 3], "netz"); },
     // Tatsache vom Gastgeber; mit zurueck:true wurde ein eigener Wunsch abgelehnt → beiBlockZurueck(x, y, z, id, wunsch {id, alt} | null)
     block: function(n){
       var w = this.welt; if(!w) return;
@@ -450,10 +454,20 @@ SC.Raum.gastWelt = function(welt){ if(welt.naechsteId < SC.RAUM_GAST_ID) welt.na
   };
   // Gast, Survival: ein abgelehnter Block-Wunsch {id, alt} wird im Rucksack rückgängig gemacht – gesetzter Block (nur in Luft oder Wasser) kommt zurück,
   // ein abgebauter (was er ergibt) wird wieder herausgenommen, soweit noch vorhanden. Liefert {zurueck, heraus} (Anzahl).
+  // Wurde der Block in Luft, Wasser oder fließende Lava gesetzt (dort darf man bauen)?
+  SC.Raum.inFreiGesetzt = function(alt){ return alt === SC.B.LUFT || SC.Fluessig.istWasser(alt) || (SC.Fluessig.istLava(alt) && !SC.Fluessig.quelle(alt)); };
   SC.Raum.blockZurueck = function(rucksack, wunsch, tatsaechlicheId){
     var r = { zurueck: 0, heraus: 0 }, B = SC.B;
     if(!rucksack || !wunsch) return r;
-    if(wunsch.id !== B.LUFT){ if(wunsch.alt !== B.LUFT && wunsch.alt !== B.WASSER) return r; if(rucksack.lege({ block: wunsch.id, anzahl: 1 }) === 0) r.zurueck = 1; return r; }
+    // Eimer: ausgegossene Quelle → voller Eimer zurück, leerer heraus; geschöpfte Quelle → leerer zurück, voller heraus (sache: was zurück soll)
+    var quelleGesetzt = SC.Fluessig.quelle(wunsch.id), geschoepft = wunsch.id === B.LUFT && SC.Fluessig.quelle(wunsch.alt);
+    if(quelleGesetzt || geschoepft){
+      var voll = SC.Eimer.voll(SC.Fluessig.art(quelleGesetzt ? wunsch.id : wunsch.alt)), zu = quelleGesetzt ? voll : B.EIMER, weg = quelleGesetzt ? B.EIMER : voll;
+      if(rucksack.entferne(weg, 1) === 0) r.heraus = 1;
+      r.sache = { block: zu, anzahl: 1 }; if(rucksack.lege(r.sache) === 0) r.zurueck = 1;
+      return r;
+    }
+    if(wunsch.id !== B.LUFT){ if(!SC.Raum.inFreiGesetzt(wunsch.alt)) return r; if(rucksack.lege({ block: wunsch.id, anzahl: 1 }) === 0) r.zurueck = 1; return r; }
     var g = wunsch.alt === undefined || wunsch.alt === B.LUFT ? null : SC.Abbau.ergibt(wunsch.alt);
     if(g === null) return r;
     for(var i = rucksack.plaetze.length - 1; i >= 0; i--){ var p = rucksack.plaetze[i]; if(p && p.block === g){ rucksack.nimm(i, 1); r.heraus = 1; break; } }

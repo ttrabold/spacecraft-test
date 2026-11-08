@@ -22,6 +22,7 @@ SC.KI = {};
   function bewege(welt, g, vx, vz, dt){
     if(!g.fliegt){ g.geschw[1] -= SCHWERE * dt; if(g.geschw[1] < -40) g.geschw[1] = -40; }   // Flieger (def.fliegt) kennen keine Schwerkraft
     var vorher = [g.pos[0], g.pos[2]];
+    if(!g.fliegt){ var st = SC.Fluss.stroemung(welt, g.pos[0], g.pos[1] + 0.3, g.pos[2]); vx += st[0]; vz += st[1]; }   // Strömung schiebt mit
     // Keine Stürze über 3 Blöcke
     var nx = g.pos[0] + vx * dt * 3, nz = g.pos[2] + vz * dt * 3;
     if(!g.fliegt && g.aufBoden && !bodenNah(welt, nx, g.pos[1] + 0.5, nz)){ vx = 0; vz = 0; }
@@ -152,9 +153,19 @@ SC.KI = {};
   // ctx: { spieler: [{ pos }] } für Wildtiere. Liefert Aktionen wie SC.KI.schritt (hier zunächst keine).
   function tierGefahr(welt, x, y, z){
     var ix = Math.floor(x), iz = Math.floor(z), id = welt.holeBlock(ix, Math.floor(y + 0.1), iz), u = welt.holeBlock(ix, Math.floor(y - 0.5), iz);
-    return id === SC.B.LAVA || id === SC.B.WASSER || u === SC.B.LAVA || u === SC.B.WASSER;
+    return !!SC.Fluessig.art(id) || !!SC.Fluessig.art(u);
   }
   SC.KI.tierGefahr = tierGefahr;
+  // Nächster trockener Platz um pos (Ringe bis r Blöcke, Höhe ±3): fester Boden, zwei freie Blöcke, kein Wasser und keine Lava → [x, y, z] oder null
+  SC.KI.trockenerPlatz = function(welt, pos, r){
+    var P = welt.planet.groesse, bx = Math.floor(pos[0]), by = Math.floor(pos[1]), bz = Math.floor(pos[2]);
+    for(var d = 1; d <= r; d++) for(var dx = -d; dx <= d; dx++) for(var dz = -d; dz <= d; dz++){
+      if(Math.max(Math.abs(dx), Math.abs(dz)) !== d) continue;
+      for(var dy = 0; dy <= 6; dy++){ var y = by + (dy % 2 ? (dy + 1) / 2 : -dy / 2), x = bx + dx, z = bz + dz;
+        if(SC.BLOECKE[welt.holeBlock(x, y - 1, z)].fest && !SC.BLOECKE[welt.holeBlock(x, y, z)].fest && !SC.BLOECKE[welt.holeBlock(x, y + 1, z)].fest && !tierGefahr(welt, x + 0.5, y, z + 0.5)) return [SC.mod(x + 0.5, P), y, SC.mod(z + 0.5, P)]; }
+    }
+    return null;
+  };
   // Begleiter neben den Besitzer setzen (n = laufende Nummer, damit mehrere Tiere nicht aufeinander stehen)
   SC.KI.tierZuBesitzer = function(welt, g, pos, n){
     var P = welt.planet.groesse, w = (n || 0) * 2.1 + 0.7, x = pos[0] + Math.sin(w) * 1.8, z = pos[2] + Math.cos(w) * 1.8;
@@ -252,7 +263,7 @@ SC.KI = {};
     g.geschw[0] = vx; g.geschw[2] = vz;
     bewege(welt, g, vx, vz, dt);
     if(g.entfernen && g.besitzer && ctx.besitzer){ SC.KI.tierZuBesitzer(welt, g, ctx.besitzer.pos, g.nr); return akt; }   // festgesteckt
-    if(g.wild && gefahr(welt, g.pos[0], g.pos[1], g.pos[2])) g.entfernen = true;
+    if(g.wild && gefahr(welt, g.pos[0], g.pos[1], g.pos[2])){ var tp = SC.KI.trockenerPlatz(welt, g.pos, 6); if(tp){ g.pos = tp; g.geschw = [0, 0, 0]; g.fest = 0; } }   // in Wasser oder Lava geraten (z. B. Eimer): aufs Trockene hüpfen, nie verpuffen
     return akt;
   };
 })();

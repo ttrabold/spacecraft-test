@@ -76,14 +76,14 @@ SC.Spiel.startpunkt = function(planet){
   var g = new SC.Generator(planet), m = planet.groesse / 2, chunks = {}, L = g._land();
   // Tatsächliche Blöcke prüfen: fester Boden, darüber zwei freie Blöcke (kein Baum, keine Wand)
   function block(x, y, z){ x = SC.mod(x, planet.groesse); z = SC.mod(z, planet.groesse); var k = (x >> 4) + "," + (z >> 4); var c = chunks[k] || (chunks[k] = g.chunk(x >> 4, z >> 4)); return SC.BLOECKE[c[SC.idx(x & 15, y, z & 15)]]; }
-  function fluessigNah(x, h, z){ for(var dx = -2; dx <= 2; dx++) for(var dz = -2; dz <= 2; dz++) for(var dy = 0; dy <= 2; dy++){ var id = block(x + dx, h + dy, z + dz).id; if(id === SC.B.LAVA || id === SC.B.WASSER) return true; } return !block(x, h, z).fest || block(x, h, z).id === SC.B.SCHLAMM; }
+  function fluessigNah(x, h, z){ for(var dx = -2; dx <= 2; dx++) for(var dz = -2; dz <= 2; dz++) for(var dy = 0; dy <= 2; dy++){ var id = block(x + dx, h + dy, z + dz).id; if(SC.Fluessig.art(id)) return true; } return !block(x, h, z).fest || block(x, h, z).id === SC.B.SCHLAMM; }
   for(var r = 0; r < 400; r += 4){
     var schritte = Math.max(1, r * 2);
     for(var i = 0; i < schritte; i++){
       var w = i / schritte * Math.PI * 2, x = SC.mod(Math.floor(m + Math.cos(w) * r), planet.groesse), z = SC.mod(Math.floor(m + Math.sin(w) * r), planet.groesse), b = g.biom(x, z), h = g.hoehe(x, z);
       if(h <= SC.MEER + 1 || b === "see" || b === "strand" || b === "berge" || h + 2 >= SC.CHUNK.H) continue;
       if(L && (L.keinLanden.indexOf(b) >= 0 || fluessigNah(x, h, z))) continue; // neue Planeten: nicht in Lava, Sumpf oder am Wasser
-      if(block(x, h, z).fest && !block(x, h + 1, z).fest && !block(x, h + 2, z).fest && block(x, h + 1, z).id !== SC.B.WASSER) return [x + 0.5, h + 1, z + 0.5];
+      if(block(x, h, z).fest && !block(x, h + 1, z).fest && !block(x, h + 2, z).fest && !SC.Fluessig.istWasser(block(x, h + 1, z).id)) return [x + 0.5, h + 1, z + 0.5];
     }
   }
   return [m + 0.5, g.hoehe(m, m) + 1, m + 0.5];
@@ -118,6 +118,7 @@ SC.Spiel.startpunkt = function(planet){
     this.daten = daten; this.audio.thema = SC.hashText(String(daten.seed || "")); // Hauptthema der Musik hängt an der Welt
     var pd = daten.planeten[daten.aktuellerPlanet], planet = new SC.Planet(pd);
     this.welt = new SC.Welt(planet, chunks || SC.Spielstand.chunksLaden(pd));
+    this.fluss = new SC.Fluss(this.welt);   // Wasser und Lava fließen (rechnet nicht als Gast, siehe _flussTakt)
     this.welt.ereignisse.an("block", function(b){
       s._truheWeg(b); s._tuerWeg(b); s._bettWeg(b);
       if(b.quelle !== "spieler") return;
@@ -210,6 +211,7 @@ SC.Spiel.startpunkt = function(planet){
       this._survival(e, dt, offen, t);
       this._tiere(dt, offen);
       this._fahrzeugTakt(dt);
+      if(!offen || this.raum) this._flussTakt(dt);   // wie die Gegner: bei offenem Menü steht die Welt still, im Raum nicht
     }
     this.tageszeit = SC.mod(this.tageszeit + dt / 1200 * this.zeitTempo, 1);
     if(this.raum) this._raumBild(dt, offen);
@@ -217,6 +219,12 @@ SC.Spiel.startpunkt = function(planet){
     this.render.bild(sp, this.tageszeit, dt);
   };
 
+  // Fließen rechnen nur Einzelspieler und Gastgeber; ein Gast bekommt die Blöcke vom Gastgeber und meldet die Warteschlange ab
+  SC.Spiel.prototype._flussTakt = function(dt){
+    if(!this.fluss) return;
+    if(this.rolle === "gast"){ this.fluss.abbauen(); this.fluss = null; return; }
+    this.fluss.schritt(dt);
+  };
   // Einmal pro Sekunde (nicht als Gast): Fundort-Fahrzeuge in der Nähe aller Spieler anlegen, verpuffte zurückholen
   SC.Spiel.prototype._fahrzeugTakt = function(dt){
     if(this.rolle === "gast" || (this._fzTakt = (this._fzTakt || 0) + dt) < 1) return;
@@ -563,7 +571,7 @@ SC.Spiel.startpunkt = function(planet){
   SC.Spiel.prototype._blockZurueck = function(id, wunsch){
     if(!this.kampf || this.spieler.modus !== "survival") return;
     var B = SC.B, r = SC.Raum.blockZurueck(this.kampf.rucksack, wunsch, id);
-    if(wunsch && wunsch.id !== B.LUFT && (wunsch.alt === B.LUFT || wunsch.alt === B.WASSER) && !r.zurueck) this.beuteAuswerfen(this.spieler.pos.slice(), [{ block: wunsch.id, anzahl: 1 }]);
+    if(wunsch && (r.sache || (wunsch.id !== B.LUFT && SC.Raum.inFreiGesetzt(wunsch.alt))) && !r.zurueck) this.beuteAuswerfen(this.spieler.pos.slice(), [r.sache || { block: wunsch.id, anzahl: 1 }]);
   };
   SC.Spiel.prototype._figurSpeichern = function(){
     var e = this._eigen; if(!e || !this.kampf) return;

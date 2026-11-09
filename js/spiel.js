@@ -122,6 +122,7 @@ SC.Spiel.startpunkt = function(planet){
     this.wetter = new SC.Wetter(daten.aktuellerPlanet, pd.wetter, Math.random); this.wetterBoden = new SC.WetterBoden(this.welt, pd, Math.random);   // Wetter (siehe _wetterTakt)
     this.welt.ereignisse.an("block", function(b){
       s._truheWeg(b); s._tuerWeg(b); s._bettWeg(b);
+      if(s.rolle !== "gast") SC.Trank.beiBlock(s.daten, s.welt.planet.id, b);   // gepflückte Pflanzen wachsen nach (rechnet der Gastgeber)
       if(b.quelle !== "spieler") return;
       if(b.id === SC.B.LUFT) s.audio.spiele("abbauen", { material: SC.Klang.material(b.alt) });
       else s.audio.spiele("setzen", { material: SC.Klang.material(b.id) });
@@ -188,6 +189,7 @@ SC.Spiel.startpunkt = function(planet){
         var kp = this.kampf, ich = this; this.eingabe.gebeMausFrei();
         ui.zeigeBlockauswahl(function(id){ sp.schnellleiste[sp.auswahl] = id; ui.hinweis(SC.BLOECKE[id].name, 1200); }, {
           ausruestung: true,
+          beiTrank: function(sl){ ich.trankSchluck(sl); },
           beiTier: function(art){ var t = SC.Tier.neu(art); ui.hinweis(kp.kaefig.lege(t) ? SC.T.neuGefangen.replace("{name}", t.name + " (" + SC.TIERE[art].name + ")") : SC.T.kaefigVoll, 2000); },
           beiMaterial: function(id){ var rest = kp.rucksack.lege({ block: id, anzahl: SC.Rucksack.STAPEL }); ui.hinweis(rest === SC.Rucksack.STAPEL ? SC.T.rucksackVoll : SC.BLOECKE[id].name + " × " + (SC.Rucksack.STAPEL - rest) + " → " + SC.T.rucksackTitel, 1500); },
           beiFahrzeug: function(art){ var f = ich.fahrzeugHinstellen(art); if(f) ui.hinweis(SC.FAHRZEUGE[art].name, 1500); },
@@ -213,7 +215,7 @@ SC.Spiel.startpunkt = function(planet){
       this._survival(e, dt, offen, t);
       this._tiere(dt, offen);
       this._fahrzeugTakt(dt);
-      if(!offen || this.raum){ this._flussTakt(dt); this._wetterTakt(dt); }   // wie die Gegner: bei offenem Menü steht die Welt still, im Raum nicht
+      if(!offen || this.raum){ this._flussTakt(dt); this._wetterTakt(dt); this._nachwuchsTakt(dt); }   // wie die Gegner: bei offenem Menü steht die Welt still, im Raum nicht
     }
     this.tageszeit = SC.mod(this.tageszeit + dt / 1200 * this.zeitTempo, 1);
     if(this.raum) this._raumBild(dt, offen);
@@ -251,6 +253,12 @@ SC.Spiel.startpunkt = function(planet){
     var beute = SC.Wetter.blitzBeute(Math.random); if(beute.length && this.beuteAuswerfen) this.beuteAuswerfen([z[0] + 0.5, z[1] + 1.2, z[2] + 0.5], beute);
   };
   // Fließen rechnen nur Einzelspieler und Gastgeber; ein Gast bekommt die Blöcke vom Gastgeber und meldet die Warteschlange ab
+  // Pflanzen wachsen nach (Zaubertränke): einmal pro Sekunde; als Gast rechnet der Gastgeber
+  SC.Spiel.prototype._nachwuchsTakt = function(dt){
+    if(this.rolle === "gast" || !this.welt) return;
+    this._nwZeit = (this._nwZeit || 0) + dt; if(this._nwZeit < 1) return; this._nwZeit = 0;
+    var l = this.daten.nachwuchs && this.daten.nachwuchs[this.welt.planet.id]; if(l && l.length) SC.Trank.nachwuchsTakt(this.welt, l, this.daten.spielzeit || 0);
+  };
   SC.Spiel.prototype._flussTakt = function(dt){
     if(!this.fluss) return;
     if(this.rolle === "gast"){ this.fluss.abbauen(); this.fluss = null; return; }
@@ -305,6 +313,7 @@ SC.Spiel.startpunkt = function(planet){
     var s = this;
     this.ui.zeigeRucksack(this.kampf, {
       kaefig: this._kaefigOptionen(),
+      beiTrinken: function(i){ s.trankTrinken(i); },
       beiWegwerfen: function(sache){ if(sache) s.beuteAuswerfen([s.spieler.pos[0] - Math.sin(s.spieler.blick[0]) * 1.5, s.spieler.pos[1], s.spieler.pos[2] - Math.cos(s.spieler.blick[0]) * 1.5], [sache], { sperre: 4, weit: true, richtung: Math.atan2(-Math.cos(s.spieler.blick[0]), -Math.sin(s.spieler.blick[0])) }); },
       beiFertig: function(){ s._weiter(); }
     });
@@ -638,7 +647,7 @@ SC.Spiel.startpunkt = function(planet){
       for(var id in r.mitspieler){
         var m = r.mitspieler[id], e = null; if(id === mein || !m.pos) continue;
         r.spieler.forEach(function(x){ if(x.id === id) e = x; });
-        l.push({ id: id, name: e ? e.name : "", farbe: e ? e.farbe : SC.RAUM_FARBEN[0], pos: m.pos, blick: m.blick, modus: m.modus, ausr: m.ausr, lebt: m.lebt, schlaeft: m.schlaeft, menue: m.menue, hieb: m.hieb, blockt: m.blockt, lp: m.lp, lpMax: m.lpMax, schild: m.schild, schildMax: m.schildMax, sitzt: m.sitzt, verbunden: true });
+        l.push({ id: id, name: e ? e.name : "", farbe: e ? e.farbe : SC.RAUM_FARBEN[0], pos: m.pos, blick: m.blick, modus: m.modus, ausr: m.ausr, trank: m.trank, lebt: m.lebt, schlaeft: m.schlaeft, menue: m.menue, hieb: m.hieb, blockt: m.blockt, lp: m.lp, lpMax: m.lpMax, schild: m.schild, schildMax: m.schildMax, sitzt: m.sitzt, verbunden: true });
       }
     }
     // Wer im Fahrzeug sitzt, wird an seinem Sitz im hier gezeichneten Fahrzeug gezeigt (sonst hinkt die Figur dem Fahrzeug hinterher)

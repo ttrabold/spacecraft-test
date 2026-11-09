@@ -80,6 +80,12 @@ SC.T = {
   wetterName: { regen: "Regen", gewitter: "Gewitter", schnee: "Schnee", schneesturm: "Schneesturm", nebel: "Nebel", wolkenbruch: "Wolkenbruch" }, wetterKlar: "Klar",
   ewWetter: "Wetter setzen", ewTrocknen: "Austrocknen jetzt",
   tierstimmen: "Tierstimmen", tierstimmenNamen: "Tiere rufen ihren Namen", tierstimmenGeraeusche: "Tiergeräusche",
+  trankGetrunken: "Getrunken: {pflanze}-Trank – {wirkung}", trankWirkung: { tempo: "schneller laufen", sprung: "höher springen", schaden: "mehr Schaden", schild: "mehr Schild", schweben: "schweben", nachtsicht: "Nachtsicht" },
+  trinken: "Trinken", kesselTitel: "Kessel", rezeptbuch: "Rezeptbuch", trankBrauen: "Brauen", traenkeTitel: "Tränke", trankKristallWahl: "Kristall", trankPflanzeWahl: "Pflanze", trankWirkungKopf: "Wirkung", trankAussehenKopf: "Aussehen",
+  trankWaehle: "Wähle einen Kristall und eine Pflanze.", trankFehlt: "Es fehlt eine Zutat.", trankGebraut: "Gebraut: {name}", rezeptbuchTipp: "Eine Flasche, ein Kristall und eine Pflanze ergeben einen Zaubertrank. Der Kristall gibt die Wirkung, die Pflanze das Aussehen. Getrunken wirkt er etwa 3 Minuten.", trankZurueck: "Zurück",
+  trankWirkungLang: { tempo: "Du läufst schneller.", sprung: "Du springst höher.", schaden: "Du machst mehr Schaden.", schild: "Du bekommst mehr Schild.", schweben: "Du schwebst und fällst langsam.", nachtsicht: "Du leuchtest und siehst nachts besser." },
+  trankTeil: { hasenohren: "Hasenohren und Puschelschwanz", katzenoehrchen: "Katzenöhrchen und Schwanz", fuchsohren: "Fuchsohren und buschiger Schwanz", eisbaerohren: "Eisbärohren", pinguinfluegel: "kleine Pinguinflügel", salamanderschwanz: "Salamanderschwanz mit Glut", papageienfedern: "Papageienfedern", froschaugen: "große Froschaugen", affenschwanz: "langer Affenschwanz" },
+  trankPlanet: { start: "Heimat", glutfrost: "Glutfrost", rankenmoor: "Rankenmoor" },
   wetterEffekte: "Wetter-Effekte", wetterEffekteAn: "An", wetterEffekteWeniger: "Weniger (für ältere Tablets)",
   fpsAnzeigen: "FPS anzeigen", autoAnlegen: "Bessere Ausrüstung automatisch anlegen", autoAngelegt: "Neu angelegt: {name} ({wert} {alt} → {neu})", bildrate: "Höchste Bildrate (Bilder pro Sekunde)", bildrateFrei: "Unbegrenzt", aufloesung: "Auflösung", aufloesungNormal: "Normal (sparsam)", aufloesungHoch: "Hoch (scharf, braucht mehr Leistung)",
   fertig: "Fertig",
@@ -117,7 +123,7 @@ SC.T = {
   zauberFrage: "{name} möchte mit der Zauberkugel alle zu deinem Bett zurückholen. Einverstanden?",
   werkbankTitel: "Werkbank", handwerkTitel: "Handwerk", handwerk: "🛠 Handwerk", herstellen: "Herstellen", hergestellt: "Hergestellt",
   metallWahl: "Metall", kristallWahl: "Kristall", wahlTipp: "Wähle ein Rezept.", wahlMetallKristall: "Wähle Metall und Kristall.", fehltMaterial: "Dir fehlen noch Rohstoffe.",
-  rezeptName: { eimer: "Eimer", netz: "Fangnetz", tierfutter: "Tierfutter", zauberkugel: "Zauberkugel", wolle: "Rote Wolle", bett: "Bett", bretter: "Holzbretter", werkbank: "Werkbank", fenster: "Fenster", fackel: "Fackeln", zaun: "Zaun", leiter: "Leitern", tuer: "Tür", truhe: "Truhe" },
+  rezeptName: { kessel: "Kessel", flasche: "Flasche", eimer: "Eimer", netz: "Fangnetz", tierfutter: "Tierfutter", zauberkugel: "Zauberkugel", wolle: "Rote Wolle", bett: "Bett", bretter: "Holzbretter", werkbank: "Werkbank", fenster: "Fenster", fackel: "Fackeln", zaun: "Zaun", leiter: "Leitern", tuer: "Tür", truhe: "Truhe" },
   kristallName: { blau: "Blau", gruen: "Grün", rot: "Rot", gelb: "Gelb", violett: "Violett", weiss: "Weiß" },
   ausruestungTitel: "Ausrüstung", materialienTitel: "Materialien",
   anlegen: "Anlegen", ablegen: "Ablegen", verschieben: "Verschieben", wohin: "Wohin? Tippe einen Platz an.", rucksackInfoLeer: "Leerer Platz", inSchnellleiste: "In die Schnellleiste", wegwerfen: "Wegwerfen",
@@ -173,7 +179,7 @@ SC.T = {
     lava: "Lava", eis: "Eis", schlamm: "Schlamm", basalt: "Basalt",
     eisenerz: "Eisenerz", titan: "Titan", glutstahl: "Glutstahl", moorsilber: "Moorsilber", sternenmetall: "Sternenmetall",
     kristallBlau: "Blauer Kristall", kristallGruen: "Grüner Kristall", kristallRot: "Roter Kristall", kristallGelb: "Gelber Kristall", kristallViolett: "Violetter Kristall", kristallWeiss: "Weißer Kristall",
-    schaltkreis: "Schaltkreis", chitin: "Chitinplatte", schneeschicht: "Schneeschicht", eimer: "Eimer", eimerWasser: "Wassereimer", eimerLava: "Lavaeimer", netz: "Fangnetz", tierfutter: "Tierfutter", werkbank: "Werkbank", fackel: "Fackel", zaun: "Zaun", leiter: "Leiter", tuer: "Tür", truhe: "Truhe", bett: "Bett", zauberkugel: "Zauberkugel"
+    schaltkreis: "Schaltkreis", chitin: "Chitinplatte", kessel: "Kessel", flasche: "Flasche", trank: "Zaubertrank", hasenklee: "Hasenklee", katzenminze: "Katzenminze", fuchsgras: "Fuchsgras", eisblume: "Eisblume", frostbeere: "Frostbeere", glutmohn: "Glutmohn", federfarn: "Federfarn", quakblume: "Quakblume", dschungelranke: "Dschungelranke", schneeschicht: "Schneeschicht", eimer: "Eimer", eimerWasser: "Wassereimer", eimerLava: "Lavaeimer", netz: "Fangnetz", tierfutter: "Tierfutter", werkbank: "Werkbank", fackel: "Fackel", zaun: "Zaun", leiter: "Leiter", tuer: "Tür", truhe: "Truhe", bett: "Bett", zauberkugel: "Zauberkugel"
   },
   // Spielanleitung (Menü und docs/ANLEITUNG.md): Abschnitte [Titel, Punkte]; „Taste – Bedeutung“ zeigt die Taste fett
   anleitung: {
@@ -303,6 +309,15 @@ SC.T = {
         "Im Schneesturm siehst du kaum etwas, und der Wind schiebt dich. Im Nebel tauchen mehr Irrlichter auf. Bei Regen verstecken sich die Tiere, nur die Frösche kommen heraus.",
         "Unter einem Dach bist du geschützt: kein Regen, kein Wind und bessere Sicht. Ein Unterschlupf lohnt sich!",
         "Ist dein Tablet zu langsam, stell in den Einstellungen „Wetter-Effekte“ auf „Weniger“."
+      ]],
+      ["Zaubertränke", [
+        "Baue an der Werkbank einen Kessel (6 Eisenerz und 2 Bretter) und aus 2 Glas drei Flaschen. Tippe den Kessel an, wähle einen Kristall und eine Pflanze und brau einen Zaubertrank. Dafür brauchst du eine Flasche, einen Kristall und eine Pflanze.",
+        "Der Kristall bestimmt die Wirkung: Gelb macht dich schneller, Grün lässt dich höher springen, Rot macht mehr Schaden, Blau gibt mehr Schild, Violett lässt dich schweben und langsam fallen, Weiß gibt dir Licht und Nachtsicht.",
+        "Die Pflanze bestimmt, wie du aussiehst: Hasenohren, Katzenöhrchen, Fuchsohren, Eisbärohren, Pinguinflügel, einen Salamanderschwanz, Papageienfedern, Froschaugen oder einen Affenschwanz. Dazu leuchtest du in der Farbe des Kristalls. Deine Mitspieler sehen das auch.",
+        "Pflanzen findest du auf jedem Planeten: In neuen Welten wachsen sie in der Landschaft (und wachsen nach einer Weile nach), und besiegte Gegner lassen sie manchmal fallen, auch in alten Welten.",
+        "Im Rezeptbuch (im Kessel und im Rucksack) steht alles auf einen Blick: welcher Kristall was bewirkt und welche Pflanze wie aussieht.",
+        "Trinken: Nimm den Trank in die Hand und tippe mit Rechtsklick oder dem Setzen-Knopf, oder wähle im Rucksack „Trinken“. Er wirkt etwa 3 Minuten. Ein neuer Trank ersetzt den alten. Wirst du besiegt, endet die Wirkung.",
+        "Im Kreativmodus gibt es alle Tränke im Reiter „Tränke“ der Blockauswahl: Antippen trinkt sofort. Der Kessel zeigt dort nur das Rezeptbuch."
       ]],
       ["Fahrzeuge", [
         "Den Schwebeflitzer findest du am Startpunkt. Kraterkäfer stehen bei Lagern, Kometenjäger bei Stationen, Schwebeflitzer auch bei Herrenhäusern.",

@@ -87,6 +87,7 @@ SC.T = {
   trankTeil: { hasenohren: "Hase: Fell, lange Ohren und Puschelschwanz", katzenoehrchen: "Katze: Fell mit Streifen, Öhrchen und langer Schwanz", fuchsohren: "Fuchs: rotes Fell, große Ohren und buschiger Schwanz", eisbaerohren: "Eisbär: weißes Fell, runde Ohren und große Pfoten", pinguinfluegel: "Pinguin: Schnabel, weißer Bauch und Flügel", salamanderschwanz: "Salamander: dunkle Haut, Glutmuster und Flammen", papageienfedern: "Papagei: bunte Federn, Schnabel und große Flügel", froschaugen: "Frosch: grüne Haut und riesige Augen", affenschwanz: "Affe: braunes Fell, Gesichtsmaske und langer Schwanz" },
   trankPlanet: { start: "Heimat", glutfrost: "Glutfrost", rankenmoor: "Rankenmoor" },
   feuerWarm: "Am Feuer ist es warm.", feuerAn: "Feuer angezündet", feuerAus: "Das Feuer ist aus.",
+  spiegel: "Spiegel", spiegelAn: "An", spiegelAus: "Aus (für langsame Tablets)",
   wetterEffekte: "Wetter-Effekte", wetterEffekteAn: "An", wetterEffekteWeniger: "Weniger (für ältere Tablets)",
   fpsAnzeigen: "FPS anzeigen", autoAnlegen: "Bessere Ausrüstung automatisch anlegen", autoAngelegt: "Neu angelegt: {name} ({wert} {alt} → {neu})", bildrate: "Höchste Bildrate (Bilder pro Sekunde)", bildrateFrei: "Unbegrenzt", aufloesung: "Auflösung", aufloesungNormal: "Normal (sparsam)", aufloesungHoch: "Hoch (scharf, braucht mehr Leistung)",
   fertig: "Fertig",
@@ -124,7 +125,7 @@ SC.T = {
   zauberFrage: "{name} möchte mit der Zauberkugel alle zu deinem Bett zurückholen. Einverstanden?",
   werkbankTitel: "Werkbank", handwerkTitel: "Handwerk", handwerk: "🛠 Handwerk", herstellen: "Herstellen", hergestellt: "Hergestellt",
   metallWahl: "Metall", kristallWahl: "Kristall", wahlTipp: "Wähle ein Rezept.", wahlMetallKristall: "Wähle Metall und Kristall.", fehltMaterial: "Dir fehlen noch Rohstoffe.",
-  rezeptName: { lagerfeuer: "Lagerfeuer", kamin: "Kamin", feuerzeug: "Feuerzeug", kessel: "Kessel", flasche: "Flasche", eimer: "Eimer", netz: "Fangnetz", tierfutter: "Tierfutter", zauberkugel: "Zauberkugel", wolle: "Rote Wolle", bett: "Bett", bretter: "Holzbretter", werkbank: "Werkbank", fenster: "Fenster", fackel: "Fackeln", zaun: "Zaun", leiter: "Leitern", tuer: "Tür", truhe: "Truhe" },
+  rezeptName: { spiegel: "Spiegel", lagerfeuer: "Lagerfeuer", kamin: "Kamin", feuerzeug: "Feuerzeug", kessel: "Kessel", flasche: "Flasche", eimer: "Eimer", netz: "Fangnetz", tierfutter: "Tierfutter", zauberkugel: "Zauberkugel", wolle: "Rote Wolle", bett: "Bett", bretter: "Holzbretter", werkbank: "Werkbank", fenster: "Fenster", fackel: "Fackeln", zaun: "Zaun", leiter: "Leitern", tuer: "Tür", truhe: "Truhe" },
   kristallName: { blau: "Blau", gruen: "Grün", rot: "Rot", gelb: "Gelb", violett: "Violett", weiss: "Weiß" },
   ausruestungTitel: "Ausrüstung", materialienTitel: "Materialien",
   anlegen: "Anlegen", ablegen: "Ablegen", verschieben: "Verschieben", wohin: "Wohin? Tippe einen Platz an.", rucksackInfoLeer: "Leerer Platz", inSchnellleiste: "In die Schnellleiste", wegwerfen: "Wegwerfen",
@@ -180,7 +181,7 @@ SC.T = {
     lava: "Lava", eis: "Eis", schlamm: "Schlamm", basalt: "Basalt",
     eisenerz: "Eisenerz", titan: "Titan", glutstahl: "Glutstahl", moorsilber: "Moorsilber", sternenmetall: "Sternenmetall",
     kristallBlau: "Blauer Kristall", kristallGruen: "Grüner Kristall", kristallRot: "Roter Kristall", kristallGelb: "Gelber Kristall", kristallViolett: "Violetter Kristall", kristallWeiss: "Weißer Kristall",
-    schaltkreis: "Schaltkreis", chitin: "Chitinplatte", lagerfeuer: "Lagerfeuer", lagerfeuerAn: "Lagerfeuer (brennt)", kamin: "Kamin", kaminAn: "Kamin (brennt)", feuerzeug: "Feuerzeug", kessel: "Kessel", flasche: "Flasche", trank: "Zaubertrank", hasenklee: "Hasenklee", katzenminze: "Katzenminze", fuchsgras: "Fuchsgras", eisblume: "Eisblume", frostbeere: "Frostbeere", glutmohn: "Glutmohn", federfarn: "Federfarn", quakblume: "Quakblume", dschungelranke: "Dschungelranke", schneeschicht: "Schneeschicht", eimer: "Eimer", eimerWasser: "Wassereimer", eimerLava: "Lavaeimer", netz: "Fangnetz", tierfutter: "Tierfutter", werkbank: "Werkbank", fackel: "Fackel", zaun: "Zaun", leiter: "Leiter", tuer: "Tür", truhe: "Truhe", bett: "Bett", zauberkugel: "Zauberkugel"
+    spiegel: "Spiegel", schaltkreis: "Schaltkreis", chitin: "Chitinplatte", lagerfeuer: "Lagerfeuer", lagerfeuerAn: "Lagerfeuer (brennt)", kamin: "Kamin", kaminAn: "Kamin (brennt)", feuerzeug: "Feuerzeug", kessel: "Kessel", flasche: "Flasche", trank: "Zaubertrank", hasenklee: "Hasenklee", katzenminze: "Katzenminze", fuchsgras: "Fuchsgras", eisblume: "Eisblume", frostbeere: "Frostbeere", glutmohn: "Glutmohn", federfarn: "Federfarn", quakblume: "Quakblume", dschungelranke: "Dschungelranke", schneeschicht: "Schneeschicht", eimer: "Eimer", eimerWasser: "Wassereimer", eimerLava: "Lavaeimer", netz: "Fangnetz", tierfutter: "Tierfutter", werkbank: "Werkbank", fackel: "Fackel", zaun: "Zaun", leiter: "Leiter", tuer: "Tür", truhe: "Truhe", bett: "Bett", zauberkugel: "Zauberkugel"
   },
   // Spielanleitung (Menü und docs/ANLEITUNG.md): Abschnitte [Titel, Punkte]; „Taste – Bedeutung“ zeigt die Taste fett
   anleitung: {
@@ -269,10 +270,11 @@ SC.T = {
         "Eisenerz findest du in Höhlen des Startplaneten, Titan tief unten, Glutstahl auf Glutfrost, Moorsilber auf Rankenmoor und Sternenmetall bei Bossen.",
         "Besiegte Gegner lassen Teile fallen, zum Beispiel Schaltkreise und Chitinplatten.",
         "Im Rucksack gibt es den Knopf Handwerk: Dort baust du aus Holz und Stein eine Werkbank.",
-        "Stell die Werkbank auf und tippe sie an. Dort baust du Fenster, Fackeln, Zäune, Leitern, Türen und Truhen.",
+        "Stell die Werkbank auf und tippe sie an. Dort baust du Fenster, Fackeln, Zäune, Leitern, Türen, Spiegel und Truhen.",
         "Laserschwert, Blaster und Rüstung baust du aus Metall: Je seltener das Metall, desto stärker. Die Farbe von Klinge und Strahl bestimmt der Kristall (Blau, Grün, Rot, Gelb, Violett oder Weiß).",
         "Gefundene Waffen und Rüstung sind seltener geworden, richtig gute lassen nur noch Bosse fallen.",
-        "Türen öffnest und schließt du durch Antippen. Auf Leitern kletterst du mit Vorwärts hoch und mit Rückwärts runter. In Truhen lagerst du Sachen, auch gemeinsam mit anderen."
+        "Türen öffnest und schließt du durch Antippen. Auf Leitern kletterst du mit Vorwärts hoch und mit Rückwärts runter. In Truhen lagerst du Sachen, auch gemeinsam mit anderen.",
+        "Einen Spiegel hängst du flach an eine Wand. Er ist zwei Blöcke hoch, und du siehst dich darin mit Rüstung, Waffe und Tieren, auch in der Ich-Ansicht. Es spiegelt immer nur der nächste Spiegel, die anderen glänzen nur. Ist dein Tablet zu langsam, stell in den Einstellungen „Spiegel“ auf „Aus“."
       ]],
       ["Betten", [
         "Ein Bett baust du an der Werkbank aus drei Wolle und drei Brettern. Wolle gibt es aus Blättern.",

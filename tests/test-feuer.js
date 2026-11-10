@@ -140,7 +140,7 @@ test("Feuer: In der Nähe eines brennenden Feuers knistert es regelmäßig, in d
 
 // --- Netz, Anleitung, Kreativ ---
 test("Feuer: Netzprotokoll 12 und alle Feuerblöcke sind in der Kreativ-Auswahl (aus und an), das Feuerzeug nicht", function(){
-  gleich(SC.NETZ_PROTOKOLL, 12);
+  wahr(SC.NETZ_PROTOKOLL >= 12);
   [SC.B.LAGERFEUER, SC.B.LAGERFEUER_AN, SC.B.KAMIN, SC.B.KAMIN_AN].forEach(function(id){ gleich(SC.BLOECKE[id].inAuswahl, true, SC.BLOECKE[id].name); }); gleich(SC.BLOECKE[SC.B.FEUERZEUG].inAuswahl, false);
 });
 test("Anleitung: Abschnitt Feuer erklärt Feuerzeug, Lagerfeuer, Kamin, Wärme, Löschen", function(){

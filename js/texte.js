@@ -116,6 +116,7 @@ SC.T = {
   kfTitel: "Käfig", kfRaus: "Rauslassen", kfRein: "Zurückholen", kfName: "Umbenennen", kfFrei: "Freilassen", kfFreiFrage: "{name} wirklich freilassen?", kfFreiJa: "Ja, freilassen", kfFreiNein: "Nein, behalten",
   kfNameOk: "Fertig", kfLeer: "Fang Tiere mit dem Fangnetz!", kfDraussenVoll: "Es können höchstens 3 Tiere gleichzeitig draußen sein.", kfKo: "{name} ruht sich noch aus.", kfKnopf: "🐾 Käfig",
   gestreichelt: "{name} freut sich! Stärker für 2 Minuten.", gefuettert: "{name} schmeckt es! Stärker für 5 Minuten.", tiereTitel: "Tiere", kfInfoDraussen: "draußen", kfInfoDrin: "im Käfig", kfInfoKo: "ruht sich aus", tierStufe: "{name} ist jetzt Stufe {stufe}!",
+  karteTitel: "Karte", karteZuMir: "Zu mir", karteDu: "Du bist hier: {x} / {z}", karteTipp: "Ziehen verschiebt, Mausrad oder Zwei-Finger-Zoom zoomt. Dunkel ist, wo du noch nicht warst.",
   truheTitel: "Truhe", truheTipp: "Tippe einen Gegenstand an, um ihn zu verschieben.", truheVoll: "Die Truhe ist voll.", truheWeg: "Hier ist keine Truhe mehr.",
   bettGesetzt: "Wiedereinstieg am Bett gesetzt.", nurNachts: "Du kannst nur nachts schlafen.", monsterNah: "Du kannst jetzt nicht schlafen, es sind Gegner in der Nähe!", schlafZzz: "Zzz …", schlafWarte: "Warte auf die anderen …", guterMorgen: "Guten Morgen!", bettFehlte: "Dein Bett fehlte, du startest am Startpunkt.", bettBlockiert: "Dein Bett ist blockiert, du startest am Startpunkt.",
   fzMotor: "Motor", fzPanzerung: "Panzerung", fzWaffe: "Bordwaffe", fzKeine: "keine", fzFarbe: "Farbe", fzTempo: "Tempo", fzPanzerungWert: "Panzerung", fzSchaden: "Schaden", fzOhneWaffe: "ohne Bordwaffe",
@@ -125,7 +126,7 @@ SC.T = {
   zauberFrage: "{name} möchte mit der Zauberkugel alle zu deinem Bett zurückholen. Einverstanden?",
   werkbankTitel: "Werkbank", handwerkTitel: "Handwerk", handwerk: "🛠 Handwerk", herstellen: "Herstellen", hergestellt: "Hergestellt",
   metallWahl: "Metall", kristallWahl: "Kristall", wahlTipp: "Wähle ein Rezept.", wahlMetallKristall: "Wähle Metall und Kristall.", fehltMaterial: "Dir fehlen noch Rohstoffe.",
-  rezeptName: { spiegel: "Spiegel", lagerfeuer: "Lagerfeuer", kamin: "Kamin", feuerzeug: "Feuerzeug", kessel: "Kessel", flasche: "Flasche", eimer: "Eimer", netz: "Fangnetz", tierfutter: "Tierfutter", zauberkugel: "Zauberkugel", wolle: "Rote Wolle", bett: "Bett", bretter: "Holzbretter", werkbank: "Werkbank", fenster: "Fenster", fackel: "Fackeln", zaun: "Zaun", leiter: "Leitern", tuer: "Tür", truhe: "Truhe" },
+  rezeptName: { karte: "Karte", spiegel: "Spiegel", lagerfeuer: "Lagerfeuer", kamin: "Kamin", feuerzeug: "Feuerzeug", kessel: "Kessel", flasche: "Flasche", eimer: "Eimer", netz: "Fangnetz", tierfutter: "Tierfutter", zauberkugel: "Zauberkugel", wolle: "Rote Wolle", bett: "Bett", bretter: "Holzbretter", werkbank: "Werkbank", fenster: "Fenster", fackel: "Fackeln", zaun: "Zaun", leiter: "Leitern", tuer: "Tür", truhe: "Truhe" },
   kristallName: { blau: "Blau", gruen: "Grün", rot: "Rot", gelb: "Gelb", violett: "Violett", weiss: "Weiß" },
   ausruestungTitel: "Ausrüstung", materialienTitel: "Materialien",
   anlegen: "Anlegen", ablegen: "Ablegen", verschieben: "Verschieben", wohin: "Wohin? Tippe einen Platz an.", rucksackInfoLeer: "Leerer Platz", inSchnellleiste: "In die Schnellleiste", wegwerfen: "Wegwerfen",
@@ -181,7 +182,7 @@ SC.T = {
     lava: "Lava", eis: "Eis", schlamm: "Schlamm", basalt: "Basalt",
     eisenerz: "Eisenerz", titan: "Titan", glutstahl: "Glutstahl", moorsilber: "Moorsilber", sternenmetall: "Sternenmetall",
     kristallBlau: "Blauer Kristall", kristallGruen: "Grüner Kristall", kristallRot: "Roter Kristall", kristallGelb: "Gelber Kristall", kristallViolett: "Violetter Kristall", kristallWeiss: "Weißer Kristall",
-    spiegel: "Spiegel", schaltkreis: "Schaltkreis", chitin: "Chitinplatte", lagerfeuer: "Lagerfeuer", lagerfeuerAn: "Lagerfeuer (brennt)", kamin: "Kamin", kaminAn: "Kamin (brennt)", feuerzeug: "Feuerzeug", kessel: "Kessel", flasche: "Flasche", trank: "Zaubertrank", hasenklee: "Hasenklee", katzenminze: "Katzenminze", fuchsgras: "Fuchsgras", eisblume: "Eisblume", frostbeere: "Frostbeere", glutmohn: "Glutmohn", federfarn: "Federfarn", quakblume: "Quakblume", dschungelranke: "Dschungelranke", schneeschicht: "Schneeschicht", eimer: "Eimer", eimerWasser: "Wassereimer", eimerLava: "Lavaeimer", netz: "Fangnetz", tierfutter: "Tierfutter", werkbank: "Werkbank", fackel: "Fackel", zaun: "Zaun", leiter: "Leiter", tuer: "Tür", truhe: "Truhe", bett: "Bett", zauberkugel: "Zauberkugel"
+    karte: "Karte", spiegel: "Spiegel", schaltkreis: "Schaltkreis", chitin: "Chitinplatte", lagerfeuer: "Lagerfeuer", lagerfeuerAn: "Lagerfeuer (brennt)", kamin: "Kamin", kaminAn: "Kamin (brennt)", feuerzeug: "Feuerzeug", kessel: "Kessel", flasche: "Flasche", trank: "Zaubertrank", hasenklee: "Hasenklee", katzenminze: "Katzenminze", fuchsgras: "Fuchsgras", eisblume: "Eisblume", frostbeere: "Frostbeere", glutmohn: "Glutmohn", federfarn: "Federfarn", quakblume: "Quakblume", dschungelranke: "Dschungelranke", schneeschicht: "Schneeschicht", eimer: "Eimer", eimerWasser: "Wassereimer", eimerLava: "Lavaeimer", netz: "Fangnetz", tierfutter: "Tierfutter", werkbank: "Werkbank", fackel: "Fackel", zaun: "Zaun", leiter: "Leiter", tuer: "Tür", truhe: "Truhe", bett: "Bett", zauberkugel: "Zauberkugel"
   },
   // Spielanleitung (Menü und docs/ANLEITUNG.md): Abschnitte [Titel, Punkte]; „Taste – Bedeutung“ zeigt die Taste fett
   anleitung: {
@@ -270,11 +271,12 @@ SC.T = {
         "Eisenerz findest du in Höhlen des Startplaneten, Titan tief unten, Glutstahl auf Glutfrost, Moorsilber auf Rankenmoor und Sternenmetall bei Bossen.",
         "Besiegte Gegner lassen Teile fallen, zum Beispiel Schaltkreise und Chitinplatten.",
         "Im Rucksack gibt es den Knopf Handwerk: Dort baust du aus Holz und Stein eine Werkbank.",
-        "Stell die Werkbank auf und tippe sie an. Dort baust du Fenster, Fackeln, Zäune, Leitern, Türen, Spiegel und Truhen.",
+        "Stell die Werkbank auf und tippe sie an. Dort baust du Fenster, Fackeln, Zäune, Leitern, Türen, Spiegel, Karten und Truhen.",
         "Laserschwert, Blaster und Rüstung baust du aus Metall: Je seltener das Metall, desto stärker. Die Farbe von Klinge und Strahl bestimmt der Kristall (Blau, Grün, Rot, Gelb, Violett oder Weiß).",
         "Gefundene Waffen und Rüstung sind seltener geworden, richtig gute lassen nur noch Bosse fallen.",
         "Türen öffnest und schließt du durch Antippen. Auf Leitern kletterst du mit Vorwärts hoch und mit Rückwärts runter. In Truhen lagerst du Sachen, auch gemeinsam mit anderen.",
-        "Einen Spiegel hängst du flach an eine Wand. Er ist zwei Blöcke hoch, und du siehst dich darin mit Rüstung, Waffe und Tieren, auch in der Ich-Ansicht. Es spiegelt immer nur der nächste Spiegel, die anderen glänzen nur. Ist dein Tablet zu langsam, stell in den Einstellungen „Spiegel“ auf „Aus“."
+        "Einen Spiegel hängst du flach an eine Wand. Er ist zwei Blöcke hoch, und du siehst dich darin mit Rüstung, Waffe und Tieren, auch in der Ich-Ansicht. Es spiegelt immer nur der nächste Spiegel, die anderen glänzen nur. Ist dein Tablet zu langsam, stell in den Einstellungen „Spiegel“ auf „Aus“.",
+        "Die Karte baust du an der Werkbank. Halte sie in der Hand und tippe (Setzen), dann siehst du von oben, wo du schon warst, dich selbst als Pfeil und deine Mitspieler als Punkte. Was du noch nicht gesehen hast, bleibt dunkel. Das Spiel schreibt immer mit, wo du warst, auch bevor du eine Karte hast."
       ]],
       ["Betten", [
         "Ein Bett baust du an der Werkbank aus drei Wolle und drei Brettern. Wolle gibt es aus Blättern.",
